@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Phonogram | Session Architect Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/tonal/browser/tonal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+    <script src="https://unpkg.com/vexchords@1.2.0/dist/vexchords.dev.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* --- GLOBAL BASE --- */
+        * { box-sizing: border-box; } 
+        body { font-family: 'Outfit', sans-serif; background: #121212; color: white; padding: 20px; margin: 0; }
+        .app-card { background: #1e1e1e; padding: 30px; border-radius: 12px; max-width: 1100px; margin: auto; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        h1 { font-family: 'Outfit', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 1.1rem; color: #fff; margin-top: 0; }
+        .sub-header { color: #888; font-size: 1rem; margin-bottom: 10px; }
+        .cormorant-garamond-slanted { font-family: "Cormorant Garamond", serif; font-optical-sizing: auto; font-weight: 700; font-style: italic; }
+
+        /* --- STANDARDIZED BUTTON SYSTEM --- */
+        .btn {
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 1px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-align: center;
+            transition: background 0.2s, opacity 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; background: #555 !important; }
+        
+        .btn-primary { background: #db3069; }
+        .btn-primary:hover:not(:disabled) { background: #ff4d8d; }
+        
+        .btn-secondary { background: #444; }
+        .btn-secondary:hover:not(:disabled) { background: #555; }
+        .btn-secondary.selected { background: #555; outline: 1px solid #28a745; outline-offset: -1px; }
+
+        .btn-success { background: #28a745; }
+        .btn-success:hover:not(:disabled) { background: #218838; }
+
+        .btn-sm { padding: 8px 15px; font-size: 0.8rem; }
+        .btn-wide { min-width: 170px; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-group .btn { flex: 1; }
+        
+        /* --- FRETBOARD --- */
+        .fretboard-layout { display: flex; flex-direction: column; margin-bottom: 30px; margin-top: 10px; background: #121212; padding: 20px 20px 20px 0; border-radius: 8px; border: 1px solid #333; }
+        .fret-header-row { display: grid; grid-template-columns: 60px repeat(5, 1fr); margin-left: 40px; margin-bottom: 10px; }
+        .fret-number { display: flex; align-items: center; justify-content: center; color: #666; font-weight: 800; font-size: 0.75rem; }
+        .fretboard-core-wrap { display: flex; }
+        .string-labels-col { width: 40px; display: flex; flex-direction: column; }
+        .string-label { height: 50px; display: flex; align-items: center; justify-content: center; color: #666; font-weight: 800; font-size: 1rem; }
+        .fretboard-interactive-area { flex: 1; position: relative; }
+        .visual-grid { position: absolute; top: 25px; bottom: 25px; left: 60px; right: 0; pointer-events: none; }
+        .v-string { position: absolute; left: 0; right: 0; height: 1px; background: #444; }
+        .v-fret { position: absolute; top: 0; bottom: 0; width: 1px; background: #444; }
+        .v-nut { position: absolute; top: 0; bottom: 0; left: 0; width: 5px; background: #d4d4d4; transform: translateX(-2.5px); border-radius: 1px; z-index: 5; }
+        .interaction-grid { display: grid; grid-template-columns: 60px repeat(5, 1fr); grid-template-rows: repeat(6, 50px); }
+        .click-zone { display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; position: relative; }
+        .note-visual { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; pointer-events: none; z-index: 20; position: relative; }
+        .open-dot { border: 2px solid white; color: white; background: #121212; }
+        .muted-x { color: #db3069; font-family: 'Arial Black', sans-serif; font-size: 1.4rem; }
+        .fretted-dot { background: #db3069; border: 1px solid white; color: white; box-shadow: 0 0 12px rgba(219, 48, 105, 0.4); }
+        
+        /* --- CONTROLS --- */
+        .controls { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; background: #1e1e1e; padding: 25px; border-radius: 8px; border: 1px solid #333; align-items: center; }
+        .chord-name-container { display: flex; align-items: center; gap: 12px; }
+        #chordNameDisplay { font-family: 'Outfit', sans-serif; margin: 0; font-size: 2.2rem; font-weight: 800; color: #fff; outline: none; border-bottom: 2px dashed transparent; transition: border-bottom 0.3s; }
+        #chordNameDisplay[contenteditable="true"] { border-bottom: 2px dashed #db3069; }
+        .edit-icon { fill: #666; cursor: pointer; transition: fill 0.3s; }
+        .edit-icon:hover { fill: #db3069; }
+        #notesDisplay { color: #db3069; font-family: monospace; font-size: 1.1rem; letter-spacing: 2px; }
+
+        /* --- LEAD SHEET --- */
+        #lead-sheet { background: white; border-radius: 8px; padding: 40px; color: black; margin-top: 20px; min-height: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; position: relative; cursor: default; }
+        .title-container { border-bottom: 2px solid black; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; padding-bottom: 5px; }
+        
+        #songTitleDisplay { font-weight: 900; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; outline: none; min-width: 50px; }
+        #songTitleDisplay[contenteditable="true"] { border-bottom: 1px dashed #db3069; background: #fffceb; }
+        
+        #keyDisplay { font-family: "Cormorant Garamond", serif; font-weight: 700; font-size: 1rem; color: #444; font-style: italic; margin-bottom: 20px; pointer-events: none; }
+        #bpmDisplay { font-family: "Cormorant Garamond", serif; font-weight: 700; font-size: 1rem; color: #444; font-style: italic; margin-bottom: 20px; display: flex; align-items: baseline; }
+
+        #bpm-value { outline: none; -webkit-tap-highlight-color: transparent; font-size: 1.4rem; line-height: 1.4rem; }
+        #bpm-icon { transform: scaleX(-1); }
+        
+        /* --- GRID & SELECTION --- */
+        .sheet-container { display: block; width: 100%; position: relative; }
+        #session-grid { display: flex; width: 100%; flex-wrap: nowrap; gap: 0; }
+        .progression-slot { position: relative; width: 25%; flex: 0 0 25%; display: flex; flex-direction: column; align-items: center; padding-bottom: 10px; transition: all 0.2s; cursor: pointer; border: 2px solid transparent; border-radius: 4px; background: white; }
+        
+        .progression-slot:hover { background: #f7f7f7; }
+        .progression-slot.selected { border-color: #db3069; background: #fffafa; box-shadow: inset 0 0 10px rgba(219, 48, 105, 0.05); }
+        
+        .slot-actions { position: absolute; display: flex; opacity: 0; transition: opacity 0.2s; z-index: 100; }
+        .progression-slot:hover .slot-actions { opacity: 1; }
+        .action-icon-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; color: #999; transition: color 0.2s; }
+        .action-icon-btn:hover { color: #db3069; }
+        .action-icon-btn.disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
+
+        #btn-add-bar { position: absolute; display: flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; z-index: 200; top: 135px; transform: translateX(-50%); transition: all 0.2s; color: #999; }
+        #btn-add-bar:hover { color: #db3069; transform: translateX(-50%) scale(1.1); }
+
+        .chord-label { font-weight: 800; font-size: 1.2rem; margin-top: 10px; height: 30px; text-align: center; pointer-events: none; }
+        .diag-wrapper { height: 140px; width: 100%; display: flex; justify-content: center; position: relative; pointer-events: none; } 
+        .tab-wrapper { width: 100%; pointer-events: none; }
+
+        .action-footer { display: flex; justify-content: flex-end; margin-top: 15px; gap: 10px; }
+
+        /* --- STRUM ARCHITECT MODAL --- */
+        #strum-modal { position: absolute; width: 380px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 1000; display: none; flex-direction: column; gap: 15px; padding: 15px; color: white; }
+        #strum-modal.active { display: flex; }
+        
+        .modal-drag-handle { cursor: move; background: #222; margin: -15px -15px 0 -15px; padding: 10px 15px; border-bottom: 1px solid #333; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-drag-handle h3 { margin: 0; font-size: 0.8rem; letter-spacing: 1px; color: #db3069; }
+        .close-modal-btn { background: none; border: none; color: #888; cursor: pointer; transition: color 0.2s; padding: 0; display: flex;}
+        .close-modal-btn:hover { color: #fff; }
+
+        /* PAINTBRUSH TOOLBAR */
+        .strum-toolbar { display: flex; align-items: center; gap: 8px; }
+        .tool-btn { background: #333; border: 1px solid #444; color: #fff; width: 34px; height: 34px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s; }
+        .tool-btn:hover { background: #444; }
+        .tool-btn.active { background: #db3069; border-color: #ff4d8d; }
+        .res-dropdown { background: #333; color: white; border: 1px solid #444; padding: 6px; border-radius: 4px; font-size: 0.8rem; margin-left: auto; cursor: pointer; outline: none; }
+
+        .strum-grid-container { display: flex; flex-wrap: nowrap; width: 100%; background: #121212; border: 1px solid #333; border-radius: 4px; overflow: hidden; height: 60px; }
+        .strum-cell { flex: 1 1 0; min-width: 0; border-right: 1px solid #222; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s; font-size: 1rem; font-weight: bold; color: #555; user-select: none; }
+        .strum-cell:last-child { border-right: none; }
+        .strum-cell:hover { background: #1e1e1e; }
+        .strum-cell.state-d { color: #fff; background: rgba(255,255,255,0.05); } 
+        .strum-cell.state-u { color: #4facfe; background: rgba(79, 172, 254, 0.05); } 
+        .strum-cell.state-m { color: #db3069; background: rgba(219, 48, 105, 0.05); } 
+
+        .strum-footer { display: flex; justify-content: flex-end; margin-top: 5px; }
+
+        /* --- SNACKBAR & ALERTS --- */
+        #snackbar { visibility: hidden; min-width: 320px; background-color: #ffffff; color: #121212; border-radius: 8px; padding: 16px 24px; position: fixed; z-index: 5000; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.75rem; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: visibility 0s, opacity 0.3s ease-in-out; opacity: 0; }
+        #snackbar.warning { border-left: 6px solid #db3069; }
+        .warn-icon { display: none; width: 20px; height: 20px; background: #db3069; color: white; border-radius: 50%; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; }
+        #snackbar.warning .icon-warn { display: flex; background: #db3069; }
+        #snackbar.success { border-left: 6px solid #28a745; }
+        #snackbar.success .icon-success { display: flex; background: #28a745; }
+        .sb-icon { width: 22px; height: 22px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; color: white; flex-shrink: 0; }
+        #snackbar.show { visibility: visible; opacity: 1; animation: fadein 0.4s, fadeout 0.4s 2.6s; }
+
+        /* Chord Alternates (Left as specialized UI elements) */
+        .alt-btn { width: 100px; padding: 8px 0; background: #222; color: #555; border: 1px solid #333; border-radius: 4px; font-family: 'Outfit', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s ease; }
+        .alt-btn.active { background: #ffffff10; color: white; cursor: pointer; }
+        .alt-btn.active:hover { background: #ffffff20; }
+        .alt-btn.selected { background: #ffffff00; color: #fff; }
+
+        /* Progression Bank List View */
+        .bank-list-container { width: 100%; margin-top: 20px; border: 1px solid #333; border-radius: 4px; overflow: hidden; background: #1a1a1a; }
+        .bank-header { display: grid; grid-template-columns: 2fr 1fr; background: #252525; padding: 12px 20px; border-bottom: 1px solid #333; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+        .bank-row { display: grid; grid-template-columns: 2fr 1fr; padding: 12px 20px; border-bottom: 1px solid #222; cursor: pointer; transition: background 0.2s; align-items: center; }
+        .bank-row:last-child { border-bottom: none; }
+        .bank-row:hover { background: #2a2a2a; }
+        .bank-row .col-name { color: #fff; font-weight: 500; font-size: 0.9rem; }
+        .bank-row .col-key { color: #db3069; font-family: monospace; font-size: 0.85rem; font-weight: 600; }
+        .bank-header, .bank-row { grid-template-columns: 40px 2fr 1fr; gap: 10px; }
+        .col-check { display: flex; align-items: center; justify-content: center; }
+
+        /* --- PDF EXPORT MODAL & STAGING --- */
+        #pdf-preview-modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); scrollbar-width: thin; scrollbar-color: #777 transparent; }
+        .modal-content { background-color: #f0f0f0; margin: 2% auto; padding: 0; width: 1100px; height: 90vh; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-header { background: #1e1e1e; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; }
+        .preview-body { flex-grow: 1; overflow-y: auto; padding: 20px; background: #555; }
+        .pdf-page-preview { background: white; width: 700px; margin: 0 auto 30px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); padding: 50px; color: black; min-height: 900px; }
+        .pdf-page-break { page-break-after: always; padding: 40px; }
+        
+        body.printing-mode #lead-sheet { background: white !important; color: black !important; }
+        body.printing-mode .chord-slot { background: white !important; border-color: #eee !important; }
+        body.printing-mode .sheet-container { background: white !important; }
+
+        #pdf-pages-staging { margin-top: 0 !important; pointer-events: none; }
+        .html2pdf__page-break { pointer-events: auto; }
+        #pdf-pages-staging .chord-slot { background: white !important; border: none !important; color: black !important; box-shadow: none !important; transform: none !important; }
+        #pdf-pages-staging svg { filter: invert(0) !important; }
+        #pdf-pages-staging .pdf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 !important; width: 100%; background: white; }
+        #pdf-pages-staging .pdf-title { font-size: 1.5rem; font-weight: 800; color: black; margin: 0; }
+        #pdf-pages-staging .pdf-key { font-size: 0.9rem; font-weight: 800; color: #444; margin-bottom: 15px; }
+
+        #file-gallery { display: block; }
+        
+        .preview-header { position: sticky !important; top: 0; background: #f8f9fa; z-index: 9999 !important; pointer-events: auto !important; display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; border-bottom: 1px solid #eee; }
+
+        /* Custom Scrollbar */
+        #pdf-preview-modal::-webkit-scrollbar { width: 8px; }
+        #pdf-preview-modal::-webkit-scrollbar-track { background: transparent; }
+        #pdf-preview-modal::-webkit-scrollbar-thumb { background: #777; border-radius: 20px; border: 2px solid transparent; background-clip: content-box; }
+        #pdf-preview-modal::-webkit-scrollbar-thumb:hover { background: #666; background-clip: content-box; }
+        #pdf-preview-modal::-webkit-scrollbar-button, #pdf-preview-modal::-webkit-scrollbar-corner { display: none !important; }
+
+        /* Progress Bar */
+        .tooltip.export-mode { flex-direction: column; align-items: flex-start; min-width: 280px; padding: 16px 24px; transform: translateX(-50%) translateY(0); }
+        .progress-wrapper { width: 100%; height: 4px; background: rgba(0, 0, 0, 0.1); border-radius: 4px; margin-top: 8px; overflow: hidden; display: none; }
+        #snackbar.export-mode .progress-wrapper { display: block; }
+        .progress-bar-fill { width: 0%; height: 100%; background: #28a745; transition: width 0.3s ease; }
+        .tooltip.success .progress-bar-fill { background: #ffffff; }
+
+        /* Animations */
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* Print Media Styles */
+        @media print { 
+            .no-print { display: none; } 
+            body { background: white; } 
+            .app-card { border: none; box-shadow: none; } 
+            #lead-sheet { padding: 0; border: none; } 
+            .progression-slot { background: none !important; border: none !important; } 
+            #btn-add-bar { display: none; } 
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <header class="no-print">
+        <div style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
+            <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+            <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+            <svg width="300px" height="100%" viewBox="0 0 400 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                <g>
+                    <g>
+                        <use xlink:href="#_Image1" x="1" y="0" width="33px" height="29px" />
+                        <g>
+                            <path d="M24.258,10.177l-9.874,9.874l-2.725,-2.725l9.874,-9.874l2.725,2.725Z" style="fill:#fff;" />
+                            <rect x="11.659" y="17.376" width="1.927" height="13.964" style="fill:#fff;" />
+                        </g>
+                    </g>
+                    <path d="M40.885,3.347l-2.596,2.596l0,1.648l10.272,0l-2.056,2.056l0,14.7l4.282,0l0,-16.756l8.317,0l0,-4.244l-18.218,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M76.75,3.349l-12.319,-0.005l0,4.77l-5.803,5.803l0,10.431l4.285,0l0,-5.778l12.194,0l0,5.778l4.286,0l0,-18.355c0,-1.46 -1.184,-2.643 -2.643,-2.643Zm-1.643,12.993l-2.057,-2.057l-8.73,0l4.395,-4.395l0,-2.256l5.968,0c0.233,0 0.423,0.189 0.423,0.423l0,8.285Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M100.387,14.05l-1.409,-1.409l1.049,0l2.057,-2.057l0,-4.229c0,-1.661 -1.347,-3.008 -3.008,-3.008l-13.16,0l-2.057,2.056l0,7.335l2.98,2.98l-2.98,0l0,8.628l20.813,0l0,-6.012l-4.284,-4.284Zm-12.243,-6.416l9.028,0c0.347,0 0.628,0.281 0.628,0.627l0,3.299l-9.656,0l0,-3.926Zm12.243,14.339l-1.903,-1.904l-10.34,0l0,-4.223l7.98,0l4.263,4.263l0,1.863Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M126.678,15.761l-4.308,4.308l-10.647,0l0,-4.182l3.302,-3.302l0,-9.239l-4.285,0l0,7.463l-3.301,3.301l0,10.236l16.711,0l4.103,-4.103l0,-2.91l-1.575,-1.573Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M148.72,3.349l-12.319,-0.005l0,4.77l-5.803,5.803l0,10.431l4.285,0l0,-5.778l12.194,0l0,5.778l4.286,0l0,-18.355c0,-1.46 -1.184,-2.643 -2.643,-2.643Zm-1.643,12.993l-2.057,-2.057l-8.73,0l4.395,-4.395l0,-2.256l5.968,0c0.233,0 0.423,0.189 0.423,0.423l0,8.285Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M156.925,3.347l-2.596,2.596l0,1.648l10.272,0l-2.056,2.056l0,14.7l4.282,0l0,-16.756l8.317,0l0,-4.244l-18.218,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M194.739,3.348l0,6.713l-5.802,5.803l0,4.206l-6.443,0l0,-16.723l-4.284,0l0,21l13.153,0c1.035,-0.033 1.858,-0.882 1.859,-1.918l0,-4.79l5.802,-5.802l0,-8.49l-4.284,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M220.512,3.343l-17.943,0l0,9.833l6.114,0l5.802,5.802l0,3.114l2.256,2.256l4.402,0l0,-1.654l-3.711,-3.713l3.08,0c1.585,0 2.871,-1.285 2.871,-2.871l0,-9.893c0.001,-0.762 -0.301,-1.493 -0.84,-2.032c-0.539,-0.539 -1.269,-0.842 -2.032,-0.842Zm-1.416,10.665c0,0.182 -0.072,0.356 -0.201,0.485c-0.129,0.129 -0.303,0.201 -0.485,0.201l-2.149,0l-5.802,-5.802l-3.607,0l0,-1.264l11.558,0c0.182,0 0.357,0.072 0.485,0.201c0.129,0.128 0.201,0.303 0.201,0.486l0,5.693Zm-16.527,1.876l0,8.474l4.285,0l0,-6.417l-2.057,-2.057l-2.227,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <path d="M229.927,3.348c-1.491,0 -2.699,1.208 -2.699,2.699l0,5.79l4.11,4.11l12.422,0l0,-4.283l-10.649,0l-1.597,-1.597l0,-2.106c0.006,-0.183 0.156,-0.329 0.338,-0.329l16.191,0l0,-4.286l-18.117,0.002Zm-1.124,12.413l-1.575,1.573l0,2.91l4.103,4.103l16.711,0l0,-4.278l-14.932,0l-4.308,-4.308Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <g>
+                        <clipPath id="_clip2">
+                            <rect x="260.375" y="6.851" width="138.087" height="23.015" />
+                        </clipPath>
+                        <g clip-path="url(#_clip2)">
+                            <g opacity="0.7">
+                                <path d="M267.178,18.174c0.709,0.154 1.249,0.463 1.65,0.91c0.386,0.463 0.571,1.049 0.571,1.775c0,0.926 -0.339,1.636 -1.018,2.13c-0.694,0.509 -1.696,0.756 -3.038,0.756l-4.966,0l0,-10.802l4.657,0c1.203,0 2.144,0.247 2.807,0.725c0.663,0.478 0.987,1.173 0.987,2.052c0,0.602 -0.139,1.111 -0.432,1.512c-0.293,0.417 -0.709,0.741 -1.218,0.941Zm-5.66,-4.29l0,3.92l3.439,0c0.879,0 1.542,-0.17 2.02,-0.509c0.478,-0.324 0.709,-0.818 0.709,-1.451c0,-0.633 -0.231,-1.126 -0.709,-1.466c-0.478,-0.324 -1.141,-0.494 -2.02,-0.494l-3.439,0Zm3.809,8.919c0.972,0 1.696,-0.17 2.19,-0.494c0.494,-0.324 0.74,-0.849 0.74,-1.543c0,-1.343 -0.972,-2.021 -2.93,-2.021l-3.809,0l0,4.058l3.809,0Z" style="fill:#888989;fill-rule:nonzero;" />
+                                <path d="M275.706,20.01l0,3.734l-1.126,0l0,-3.734l-4.318,-7.067l1.218,0l3.701,6.064l3.701,-6.064l1.141,0l-4.318,7.067Z" style="fill:#888989;fill-rule:nonzero;" />
+                                <path d="M305.68,14.31l0,-1.339l3.615,0c0.995,0 1.846,0.354 2.553,1.062c0.707,0.708 1.061,1.56 1.061,2.555l0,0.169c0,0.995 -0.354,1.847 -1.061,2.555c-0.708,0.708 -1.559,1.062 -2.553,1.062l-2.276,0l0,3.371l-1.338,0l0,-4.71l3.522,0c0.656,0 1.215,-0.231 1.677,-0.693c0.461,-0.462 0.692,-1.018 0.692,-1.67c0,-0.652 -0.231,-1.208 -0.692,-1.67c-0.462,-0.462 -1.02,-0.693 -1.677,-0.693l-3.522,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M314.567,23.745l0,-10.774l1.338,0l0,4.71l4.553,0l0,-4.71l1.338,0l0,10.774l-1.338,0l0,-4.71l-4.553,0l0,4.71l-1.338,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M328.837,14.31c-1.118,0 -2.072,0.395 -2.861,1.185c-0.79,0.79 -1.184,1.744 -1.184,2.863c0,0.544 0.103,1.062 0.308,1.555c0.205,0.492 0.497,0.928 0.877,1.308c0.379,0.38 0.815,0.672 1.307,0.877c0.759,0.308 1.538,0.382 2.338,0.223c0.8,-0.159 1.489,-0.528 2.069,-1.108c0.579,-0.58 0.949,-1.27 1.107,-2.07c0.159,-0.8 0.082,-1.578 -0.231,-2.332c-0.313,-0.754 -0.807,-1.36 -1.484,-1.816c-0.677,-0.457 -1.425,-0.685 -2.246,-0.685Zm-2.699,-0.616c0.825,-0.482 1.725,-0.723 2.699,-0.723c0.974,0 1.874,0.241 2.699,0.723c0.826,0.482 1.479,1.136 1.961,1.962c0.482,0.826 0.723,1.726 0.723,2.701c0,0.975 -0.241,1.875 -0.723,2.701c-0.482,0.826 -1.136,1.48 -1.961,1.962c-0.826,0.482 -1.725,0.723 -2.699,0.723c-0.974,0 -1.874,-0.241 -2.699,-0.723c-0.826,-0.482 -1.479,-1.136 -1.961,-1.962c-0.482,-0.826 -0.723,-1.726 -0.723,-2.701c0,-0.975 0.241,-1.875 0.723,-2.701c0.482,-0.826 1.136,-1.48 1.961,-1.962Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M341.769,23.745l-4.553,-8.049l0,8.049l-1.338,0l0,-10.774l1.338,0l4.553,8.049l0,-8.049l1.338,0l0,10.774l-1.338,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M350.147,14.31c-1.118,0 -2.071,0.395 -2.861,1.185c-0.79,0.79 -1.184,1.744 -1.184,2.863c0,0.544 0.103,1.062 0.308,1.555c0.205,0.492 0.497,0.928 0.877,1.308c0.379,0.38 0.815,0.672 1.307,0.877c0.759,0.308 1.538,0.382 2.338,0.223c0.8,-0.159 1.489,-0.528 2.069,-1.108c0.579,-0.58 0.949,-1.27 1.107,-2.07c0.159,-0.8 0.082,-1.578 -0.231,-2.332c-0.313,-0.754 -0.807,-1.36 -1.484,-1.816c-0.677,-0.457 -1.425,-0.685 -2.246,-0.685Zm-2.699,-0.616c0.825,-0.482 1.725,-0.723 2.699,-0.723c0.974,0 1.874,0.241 2.699,0.723c0.825,0.482 1.479,1.136 1.961,1.962c0.482,0.826 0.723,1.726 0.723,2.701c0,0.975 -0.241,1.875 -0.723,2.701c-0.482,0.826 -1.136,1.48 -1.961,1.962c-0.826,0.482 -1.725,0.723 -2.699,0.723c-0.974,0 -1.874,-0.241 -2.699,-0.723c-0.826,-0.482 -1.479,-1.136 -1.961,-1.962c-0.482,-0.826 -0.723,-1.726 -0.723,-2.701c0,-0.975 0.241,-1.875 0.723,-2.701c0.482,-0.826 1.136,-1.48 1.961,-1.962Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M362.579,12.971c0.81,0 1.579,0.174 2.307,0.523c0.728,0.349 1.348,0.836 1.861,1.462l-1.169,0.693c-0.728,-0.811 -1.636,-1.252 -2.723,-1.324c-1.087,-0.072 -2.046,0.241 -2.876,0.939c-0.831,0.698 -1.305,1.585 -1.423,2.663c-0.118,1.077 0.156,2.044 0.823,2.901c0.667,0.857 1.536,1.365 2.607,1.524c1.072,0.159 2.048,-0.074 2.93,-0.7l-0.323,-0.493l-0.538,-0.785l-0.908,-1.339l1.63,0l0.769,1.139l0.431,0.646l0.185,0.262l1.8,2.663l-1.615,0l-0.677,-0.985c-0.943,0.657 -1.997,0.985 -3.161,0.985c-1.164,0 -2.21,-0.347 -3.138,-1.04c-0.928,-0.694 -1.569,-1.595 -1.923,-2.705c-0.354,-1.11 -0.349,-2.217 0.015,-3.321c0.364,-1.105 1.018,-1.999 1.961,-2.682c0.943,-0.683 1.994,-1.025 3.153,-1.025Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M368.538,14.31l0,-1.339l3.615,0c0.995,0 1.846,0.354 2.553,1.062c0.708,0.708 1.062,1.56 1.062,2.555l0,0.169c0,0.77 -0.223,1.467 -0.669,2.093c-0.446,0.626 -1.028,1.067 -1.746,1.324l2.415,3.571l-1.631,0l-1.738,-2.586l-0.538,-0.785l-0.908,-1.339l1.107,0c0.656,0 1.215,-0.231 1.677,-0.693c0.461,-0.462 0.692,-1.018 0.692,-1.67c0,-0.652 -0.231,-1.208 -0.692,-1.67c-0.461,-0.462 -1.02,-0.693 -1.677,-0.693l-3.522,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M381.194,12.971l1.415,0l3.767,10.774l-1.43,0l-3.045,-8.727l-3.061,8.727l-1.415,0l3.769,-10.774Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M396.295,12.971l2.168,0l0,10.774l-1.353,0l0,-9.05l-3.153,9.05l-1.415,0l-3.169,-9.05l0,9.05l-1.338,0l0,-10.774l2.169,0l3.046,8.742l3.046,-8.742Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                <path d="M295.672,19.334l1.987,-1.988c0.022,-0.02 0.044,-0.041 0.064,-0.064c0.114,-0.129 0.183,-0.301 0.183,-0.49c0,-0.185 -0.067,-0.354 -0.177,-0.482c-0.024,-0.027 -0.049,-0.053 -0.077,-0.077l-3.562,-3.564c-0.013,-0.014 -0.026,-0.028 -0.041,-0.041c-0.124,-0.114 -0.287,-0.184 -0.466,-0.184c-0.208,0 -0.395,0.094 -0.523,0.244l-0.003,0l-2.358,2.36l-0.011,-3.888c0.012,-0.17 0.08,-0.324 0.186,-0.441l2.25,-2.251c0.123,-0.111 0.284,-0.179 0.46,-0.179c0.171,0 0.328,0.064 0.45,0.17l7.859,7.863c0.104,0.127 0.167,0.291 0.167,0.47c0,0.182 -0.065,0.348 -0.171,0.476l-6.37,6.374l-0.014,-3.861c0.005,-0.17 0.068,-0.326 0.168,-0.447Z" style="fill:#a4a4a4;" />
+                                <path d="M290.699,23.337l0,-5.478c0.008,-0.181 0.081,-0.344 0.194,-0.467l2.231,-2.232c0.12,-0.1 0.273,-0.161 0.439,-0.161c0.175,0 0.335,0.067 0.458,0.177l1.125,1.126c0.116,0.13 0.187,0.303 0.187,0.494c0,0.19 -0.07,0.362 -0.185,0.492l-1.245,1.246l-0.014,0.011c-0.035,0.029 -0.067,0.062 -0.096,0.098c-0.087,0.109 -0.145,0.244 -0.159,0.392c-0.001,0.015 -0.002,0.031 -0.003,0.046c-0,0.009 -0,0.017 -0,0.026c0,0.024 0.001,0.049 0.003,0.072l0,6.055c-0.007,0.173 -0.073,0.33 -0.177,0.451l-2.572,2.573c-0.121,0.104 -0.277,0.167 -0.446,0.167c-0.029,0 -0.057,-0.002 -0.085,-0.005c-0.018,-0.003 -0.037,-0.006 -0.055,-0.009c-1.043,-0.188 -1.835,-1.102 -1.835,-2.199c0,-1.03 0.698,-1.898 1.646,-2.156c0.011,-0.002 0.022,-0.004 0.033,-0.006c0.022,-0.005 0.045,-0.011 0.066,-0.018c0.283,-0.093 0.488,-0.368 0.488,-0.692l0,-0.004l0.001,0Z" style="fill:#a4a4a4;" />
+                            </g>
+                        </g>
+                    </g>
+                </g>
+                <defs>
+                    <image id="_Image1" width="33px" height="29px" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAdCAYAAAAkXAW5AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA7klEQVRIie3XvzJDURCA8d8ikQgZag+hUvMmCm+novYeShWVofAnySWyiuTqQjLmXhPuN3NmTnFmvy3O2bMb5pCZfeyjj02szTs7h3cUeMAtRhGRS8Zo+KcEZGbgGIfYqtj5ggtcR8S4YlfDilJezF65r5HEMCImkZkdnKL7C0mc4aZmb8MKEJnZxgl2anY/4Twi7sonum35puWnvKGIiEnN3oYV4PO/yMwujnCguhI+wCWuIqKoyNHwB/iykcnMddMRcBd7piNh65uYIzziHs8WqIoLdVOZuYH2bPXQmSXTwgRj0zI8wBCvi8hLPgCX8UMIJe++DQAAAABJRU5ErkJggg==" />
+                </defs>
+            </svg>
+            <h1 style="font-size: 0.8rem; font-weight: 400; color: #888; letter-spacing: 1px; ">Free Guitar Chord Diagram & Progression Creator</h1>
+        </div>
+        
+        <div class="sub-header">Create your chord on the fretboard below</div>
+    </header>
+
+    <div class="no-print">
+        <div id="fretboard-mount"></div>
+        <div class="controls">
+            <div>
+                <label style="color:#888; font-size: 1rem; text-transform: uppercase;">Chord Name</label>
+                <div class="chord-name-container">
+                    <h2 id="chordNameDisplay" contenteditable="false" spellcheck="false">Chord Name</h2>
+                    <svg class="edit-icon" onclick="enableChordEdit()" width="20" height="20" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <div id="notesDisplay"></div>
+                <p style="color:#888; font-size: 1rem; margin-top: 20px; margin-bottom: 12px;">Suggested Alternate Chord Names</p>
+                <div id="alt-button-group" style="display: flex; gap: 8px; justify-content: left; ">
+                    <button class="alt-btn" id="alt-0" disabled>—</button>
+                    <button class="alt-btn" id="alt-1" disabled>—</button>
+                    <button class="alt-btn" id="alt-2" disabled>—</button>
+                    <button class="alt-btn" id="alt-3" disabled>—</button>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btnAddTop" onclick="addChordToSheet()">Add to Sheet</button>
+                <button class="btn btn-secondary" onclick="clearFretboard()">Clear Chord</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="lead-sheet" onclick="deselectAllSlots()">
+        <div class="title-container" onclick="event.stopPropagation()">
+            <div id="songTitleDisplay" contenteditable="false" spellcheck="false">SONG TITLE</div>
+            <svg class="no-print edit-icon" width="14" height="14" viewBox="0 0 24 24" onclick="handleTitleEditClick()"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </div>
+        <div style="display: flex; flex-direction: row; gap: 20px; align-items: baseline; line-height: 2rem;">
+            <div id="keyDisplay">Key: -</div>
+             <div id="bpmDisplay" style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 1rem; color: #444;">BPM:</span>
+                <span id="bpm-value" style="font-size: 1.4rem; outline: none; cursor: pointer; min-width: 5px;"></span>
+                <svg class="edit-icon" id="edit-bpm-btn" viewBox="0 0 24 24" width="14" height="14" style="position: relative; top: 2px; cursor: pointer;">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="sheet-container">
+            <div id="session-grid"></div>
+            <button id="btn-add-bar" class="no-print" onclick="event.stopPropagation(); addEmptyBar();" title="Add Bar">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="action-footer no-print">
+        <button class="btn btn-primary btn-wide" onclick="saveProgressionToFile()">Save Progression</button>
+        <button class="btn btn-secondary btn-wide" onclick="resetFullProgression()">Clear Sheet</button>
+    </div>
+
+    <div id="bank-container" class="no-print" style="margin-top: 50px; border-top: 1px solid #333; padding-top: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK</h3>
+            <div style="display: flex; gap: 10px;">
+                <button id="export-pdf-btn" class="btn btn-primary" onclick="exportSelectedToPDF()">Export Selected (PDF)</button>
+                <button id="folder-picker-btn" class="btn btn-secondary" onclick="connectWatchFolder()">Connect Watch Folder</button>
+            </div>
+        </div>
+        
+        <div class="bank-list-container">
+            <div class="bank-header">
+                <div class="col-check"><input type="checkbox" id="select-all-bank" onclick="toggleAllCheckboxes(this)"></div>
+                <div>Name</div>
+                <div>Key</div>
+            </div>
+            <div id="file-gallery">...</div>
+        </div>
+        
+        <div id="snackbar">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
+                <div id="snackbar-text"></div>
+                <div class="sb-icon icon-warn">!</div>
+                <div class="sb-icon icon-success">✓</div>
+            </div>
+            <div class="progress-wrapper">
+                <div id="export-progress-bar" class="progress-bar-fill"></div>
+            </div>
+        </div>
+</div>
+
+<div id="strum-modal" class="strum-modal no-print" onclick="event.stopPropagation()">
+    <div class="modal-drag-handle" id="strum-handle">
+        <h3 id="strum-target-name">Strum: Chord</h3>
+        <button class="close-modal-btn" onclick="deselectAllSlots()" title="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+    
+    <div class="strum-toolbar">
+        <button class="tool-btn active" id="tool-d" onclick="setTool('d')" title="Downstroke">&darr;</button>
+        <button class="tool-btn" id="tool-u" onclick="setTool('u')" title="Upstroke">&uarr;</button>
+        <button class="tool-btn" id="tool-m" onclick="setTool('m')" title="Mute">X</button>
+        <button class="tool-btn" id="tool-erase" onclick="setTool('')" title="Eraser">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21" />
+                <path d="M22 21H7" />
+                <path d="m5 11 9 9" />
+            </svg>
+        </button>
+
+        <select class="res-dropdown" id="resSelect" onchange="changeResolution(this.value)">
+            <option value="1">1/1</option>
+            <option value="2">1/2</option>
+            <option value="4" selected>1/4</option>
+            <option value="8">1/8</option>
+            <option value="16">1/16</option>
+        </select>
+    </div>
+
+    <div class="strum-grid-container" id="strum-grid"></div>
+    
+    <div class="strum-footer">
+        <button class="btn btn-primary btn-sm" onclick="insertStrumming()">Insert Pattern</button>
+        <button class="tool-btn" id="tool-clear" onclick="clearStrumPattern()" title="Clear Pattern" style="margin-left: 8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<div id="pdf-preview-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="margin:0; font-size: 0.9rem; letter-spacing: 2px;">SESSION ARCHITECT | PRINT PREVIEW</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success btn-wide" onclick="triggerFinalPDF()">Download PDF</button>
+                <button class="btn btn-secondary btn-wide" onclick="closePreview(this)">Cancel</button>
+            </div>
+        </div>
+        <div class="preview-body">
+            <div id="pdf-pages-staging"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========================================== //
+    // --- 1. STATE & GLOBALS ---                 //
+    // ========================================== //
+    const tuning = ["E4", "B3", "G3", "D3", "A2", "E2"];
+    let currentFrets = [-1, -1, -1, -1, -1, -1];
+    let progressionData = []; 
+    let isUserEditingChord = false;
+    let titleHasBeenEdited = false;
+    let lastUserTitle = "SONG TITLE"; 
+    
+    // Clipboard Memory
+    let clipboardChordOnly = null;
+    let clipboardStrumOnly = null;
+    
+    // UI State
+    let selectedSlotIndex = null;
+    let activeBrush = 'd'; 
+    let tempStrumData = { pattern: [], resolution: 4 };
+    let isPaintingStrums = false; 
+    let currentlySelectedChordName = "";
+    
+    // File Handle Memory
+    let localFolderHandle = null;
+    let selectedFiles = new Set();
+    let previousBpm = "";
+
+    // ========================================== //
+    // --- 2. INITIALIZATION & EVENTS ---         //
+    // ========================================== //
+    window.onload = () => {
+        initBpmListeners();
+        makeDraggable(document.getElementById("strum-modal"));
+        document.addEventListener('mouseup', () => { isPaintingStrums = false; });
+        
+        window.addEventListener('resize', () => {
+            renderSheet();
+            if(selectedSlotIndex !== null) updateStrumModalVisibility();
+        });
+
+        renderFretboard();
+        renderSheet();
+    };
+
+    function initBpmListeners() {
+        const bpmValue = document.getElementById('bpm-value');
+        const editBpmBtn = document.getElementById('edit-bpm-btn');
+
+        [bpmValue, editBpmBtn].forEach(el => {
+            if(!el) return;
+            el.addEventListener('click', () => {
+                previousBpm = bpmValue.innerText;
+                bpmValue.contentEditable = true;
+                editBpmBtn.style.visibility = 'hidden';
+                bpmValue.focus();
+                
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(bpmValue);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            });
+        });
+
+        bpmValue.addEventListener('blur', () => {
+            bpmValue.contentEditable = false;
+            editBpmBtn.style.visibility = 'visible';
+            let val = bpmValue.innerText.trim();
+            if (val !== "" && isNaN(val)) bpmValue.innerText = previousBpm;
+        });
+
+        bpmValue.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                bpmValue.blur();
+            }
+            if (e.key === 'Escape') {
+                bpmValue.innerText = previousBpm;
+                bpmValue.blur();
+            }
+        });
+    }
+
+    // ========================================== //
+    // --- 3. FRETBOARD LOGIC ---                 //
+    // ========================================== //
+    function renderFretboard() {
+        const mount = document.getElementById('fretboard-mount');
+        mount.innerHTML = `<div class="fretboard-layout">
+            <div class="fret-header-row"><div class="fret-number">OPEN</div>${[1,2,3,4,5].map(i => `<div class="fret-number">${i}</div>`).join('')}</div>
+            <div class="fretboard-core-wrap">
+                <div class="string-labels-col">${tuning.map(t => `<div class="string-label">${Tonal.Note.get(t).pc}</div>`).join('')}</div>
+                <div class="fretboard-interactive-area">
+                    <div class="visual-grid">${[0,20,40,60,80,100].map(p => `<div class="v-string" style="top:${p}%;"></div>`).join('')}${[20,40,60,80,100].map(p => `<div class="v-fret" style="left:${p}%;"></div>`).join('')}<div class="v-nut"></div></div>
+                    <div class="interaction-grid" id="interaction-grid"></div>
+                </div>
+            </div>
+        </div>`;
+        
+        const grid = document.getElementById('interaction-grid');
+        
+        tuning.forEach((note, s) => {
+            const nutZone = document.createElement('div'); 
+            nutZone.className = 'click-zone';
+            
+            nutZone.onclick = () => { 
+                const current = currentFrets[s];
+                if (current === -1 || current > 0) currentFrets[s] = 0; 
+                else if (current === 0) currentFrets[s] = -2; 
+                else currentFrets[s] = -1; 
+                
+                isUserEditingChord = false; 
+                renderFretboard(); 
+            };
+
+            if (currentFrets[s] === 0) nutZone.innerHTML = `<div class="note-visual open-dot">${Tonal.Note.get(note).pc}</div>`;
+            else if (currentFrets[s] === -2) nutZone.innerHTML = '<div class="note-visual muted-x">X</div>';
+            
+            grid.appendChild(nutZone);
+
+            for (let f = 1; f <= 5; f++) {
+                const fretZone = document.createElement('div'); 
+                fretZone.className = 'click-zone';
+                fretZone.onclick = () => { 
+                    currentFrets[s] = (currentFrets[s] === f) ? -1 : f; 
+                    isUserEditingChord = false; 
+                    renderFretboard(); 
+                };
+                
+                if (currentFrets[s] === f) { 
+                    const pc = Tonal.Note.get(Tonal.Note.transpose(note, Tonal.Interval.fromSemitones(f))).pc; 
+                    fretZone.innerHTML = `<div class="note-visual fretted-dot">${pc}</div>`; 
+                }
+                grid.appendChild(fretZone);
+            }
+        });
+        
+        updateAnalysis();
+    }
+
+    function updateAnalysis() {
+        let noteOrder = currentFrets.map((f, i) => f === -2 ? "X" : (f === -1 ? "-" : Tonal.Note.get(Tonal.Note.transpose(tuning[i], Tonal.Interval.fromSemitones(f))).pc));
+        document.getElementById('notesDisplay').innerText = [...noteOrder].reverse().join(" ");
+        
+        if (isUserEditingChord) return;
+        
+        let activeNotes = [];
+        let bassNote = null;
+        for (let i = 5; i >= 0; i--) { 
+            if (currentFrets[i] >= 0) { 
+                const note = Tonal.Note.transpose(tuning[i], Tonal.Interval.fromSemitones(currentFrets[i])); 
+                activeNotes.push(note); 
+                if (bassNote === null) bassNote = Tonal.Note.get(note).pc; 
+            } 
+        }
+
+        const resetButtons = () => {
+            for(let i=0; i<4; i++) {
+                const btn = document.getElementById(`alt-${i}`);
+                btn.innerText = "—";
+                btn.disabled = true;
+                btn.className = "alt-btn";
+            }
+        };
+
+        if (activeNotes.length === 0) { 
+            document.getElementById('chordNameDisplay').innerText = "Chord Name"; 
+            resetButtons();
+            currentlySelectedChordName = "";
+            return; 
+        }
+        
+        let pcSet = [...new Set(activeNotes.map(n => Tonal.Note.get(n).pc))];
+        let processedNames = Tonal.Chord.detect(pcSet);
+
+        if (processedNames.length === 0) {
+            const allTypes = Tonal.ChordType.all();
+            let candidates = [];
+            for (let root of pcSet) {
+                for (let type of allTypes) {
+                    const chordNotes = Tonal.Chord.getChord(type.aliases[0], root).notes;
+                    const intersection = pcSet.filter(n => chordNotes.includes(n));
+                    if (intersection.length >= 3) {
+                        candidates.push({ name: root + (type.aliases[0] || type.name), score: intersection.length });
+                    }
+                }
+            }
+            processedNames = candidates.sort((a,b) => b.score - a.score).map(c => c.name);
+        }
+
+        processedNames = [...new Set(processedNames.map(name => {
+            let root = name.match(/^[A-G][#b]?/)?.[0];
+            let base = name.split('/')[0]
+                .replace("Major", "")
+                .replace("Minor", "m")
+                .replace(/M$/, "")
+                .replace(/no\d+/g, ""); 
+
+            if (root && bassNote && root.toUpperCase() !== bassNote.toUpperCase()) return base + "/" + bassNote;
+            return base;
+        }))];
+
+        currentlySelectedChordName = processedNames[0] || "Custom Chord";
+        document.getElementById('chordNameDisplay').innerText = currentlySelectedChordName;
+
+        resetButtons();
+        const alternates = processedNames.slice(1, 5); 
+
+        alternates.forEach((altName, index) => {
+            const btn = document.getElementById(`alt-${index}`);
+            btn.innerText = altName;
+            btn.disabled = false;
+            btn.className = "alt-btn active";
+            
+            btn.onclick = () => {
+                currentlySelectedChordName = altName;
+                document.getElementById('chordNameDisplay').innerText = altName;
+                document.querySelectorAll('.alt-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+        });
+    }
+
+    function clearFretboard() { 
+        currentFrets = [-1,-1,-1,-1,-1,-1]; 
+        isUserEditingChord = false; 
+        renderFretboard(); 
+    }
+
+    function enableChordEdit() {
+        const chordEl = document.getElementById('chordNameDisplay');
+        chordEl.contentEditable = "true";
+        isUserEditingChord = true;
+        chordEl.focus();
+        chordEl.onblur = () => { chordEl.contentEditable = "false"; };
+        chordEl.onkeydown = (e) => { if(e.key === 'Enter') chordEl.blur(); };
+    }
+
+    // ========================================== //
+    // --- 4. LEAD SHEET LOGIC ---                //
+    // ========================================== //
+    function handleTitleEditClick() {
+        const titleEl = document.getElementById('songTitleDisplay');
+        titleEl.contentEditable = "true";
+        
+        const previousValue = titleEl.innerText.trim();
+        if (previousValue === "SONG TITLE") titleEl.innerText = "";
+        
+        titleEl.focus();
+        
+        titleEl.onblur = () => {
+            const newValue = titleEl.innerText.trim();
+            if (newValue === "") {
+                titleEl.innerText = lastUserTitle;
+            } else {
+                lastUserTitle = newValue;
+                titleHasBeenEdited = true;
+            }
+            titleEl.contentEditable = "false";
+        };
+        
+        titleEl.onkeydown = (e) => { 
+            if(e.key === 'Enter') {
+                e.preventDefault(); 
+                titleEl.blur(); 
+            }
+        };
+    }
+
+    function resetFullProgression() {
+        const title = document.getElementById('songTitleDisplay');
+        const bpm = document.getElementById('bpm-value');
+
+        if (title) title.innerText = "Song Title";
+        if (bpm) bpm.innerText = "";
+
+        progressionData = [];
+        deselectAllSlots(); 
+        renderSheet(); 
+    }
+
+    function addEmptyBar() {
+        if (progressionData.length < 4) {
+            progressionData.push({ isEmpty: true, frets: [-1,-1,-1,-1,-1,-1], name: '', resolution: 4, pattern: ['d','','',''] });
+            renderSheet();
+        }
+    }
+
+    function handleDelete(index) {
+        if (progressionData[index].isEmpty) {
+            progressionData.splice(index, 1);
+            if(selectedSlotIndex === index) deselectAllSlots();
+        } else {
+            progressionData[index] = { isEmpty: true, frets: [-1,-1,-1,-1,-1,-1], name: '', resolution: 4, pattern: ['d','','',''] };
+        }
+        renderSheet();
+    }
+
+    function addChordToSheet() {
+        const currentName = document.getElementById('chordNameDisplay').innerText;
+
+        if (selectedSlotIndex !== null) {
+            if (progressionData[selectedSlotIndex].isEmpty) {
+                const target = progressionData[selectedSlotIndex];
+                progressionData[selectedSlotIndex] = {
+                    ...target, 
+                    name: currentName,
+                    frets: [...currentFrets],
+                    isEmpty: false,
+                    resolution: target.resolution || 4,
+                    pattern: target.pattern || ['d', '', '', '']
+                };
+                renderSheet();
+                setTimeout(updateStrumModalVisibility, 20);
+            } else {
+                showTooltip("Please clear the chord first", "warning");
+            }
+        } else {
+            if (progressionData.length < 4) {
+                progressionData.push({ 
+                    name: currentName, 
+                    frets: [...currentFrets], 
+                    resolution: 4, 
+                    pattern: ['d', '', '', ''], 
+                    isEmpty: false 
+                });
+                renderSheet();
+            }
+        }
+    }
+
+    function deselectAllSlots() {
+        if (selectedSlotIndex !== null) {
+            selectedSlotIndex = null;
+            updateStrumModalVisibility();
+            renderSheet();
+        }
+    }
+
+    function renderSheet() {
+        const grid = document.getElementById('session-grid');
+        const addBtn = document.getElementById('btn-add-bar');
+        grid.innerHTML = ''; 
+
+        progressionData.forEach((item, index) => {
+            const slot = document.createElement('div');
+            slot.className = `progression-slot ${selectedSlotIndex === index ? 'selected' : ''}`;
+            
+            const pasteChordClass = clipboardChordOnly === null ? 'disabled' : '';
+            const pasteStrumClass = clipboardStrumOnly === null ? 'disabled' : '';
+            const hasChord = !item.isEmpty;
+
+            slot.onclick = (e) => {
+                e.stopPropagation(); 
+                selectedSlotIndex = (selectedSlotIndex === index) ? null : index;
+                renderSheet(); 
+                updateStrumModalVisibility();
+            };
+
+            slot.innerHTML = `
+                <div class="slot-actions no-print" style="top: 8px; right: 8px;">
+                    <button class="action-icon-btn" onclick="event.stopPropagation(); handleDelete(${index})" title="Delete Bar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y1="17"></line><line x1="14" y1="11" x2="14" y1="17"></line></svg>
+                    </button>
+                </div>
+
+                <div class="chord-label">${item.isEmpty ? '' : item.name}</div>
+                <div class="diag-wrapper"><div id="diag-svg-${index}"></div></div>
+                
+                <div class="slot-actions no-print" style="top: 70px; right: 32px; flex-direction: row; gap: 6px;">
+                    ${hasChord ? `
+                    <button class="action-icon-btn" onclick="event.stopPropagation(); handleCopyChord(${index})" title="Copy Chord">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>` : ''}
+                    <button class="action-icon-btn ${pasteChordClass}" onclick="event.stopPropagation(); handlePasteChord(${index})" title="Paste Chord">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    </button>
+                </div>
+
+                <div class="tab-wrapper" id="tab-svg-${index}"></div>
+                
+                <div class="slot-actions no-print" style="bottom: 150px; right: 8px; flex-direction: row; gap: 6px;">
+                    <button class="action-icon-btn" onclick="event.stopPropagation(); handleCopyStrum(${index})" title="Copy Strum Pattern">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                    <button class="action-icon-btn ${pasteStrumClass}" onclick="event.stopPropagation(); handlePasteStrum(${index})" title="Paste Strum Pattern">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    </button>
+                </div>
+            `;
+            grid.appendChild(slot);
+        });
+
+        if (progressionData.length < 4) {
+            addBtn.style.display = 'flex';
+            addBtn.style.left = (progressionData.length * 25) + "%";
+        } else {
+            addBtn.style.display = 'none';
+        }
+        
+        setTimeout(() => {
+            progressionData.forEach((item, index) => drawChordGraphics(item, index));
+        }, 10);
+
+        const canAddNormally = progressionData.length < 4;
+        const isSlotSelected = selectedSlotIndex !== null;
+        document.getElementById('btnAddTop').disabled = !canAddNormally && !isSlotSelected;
+        
+        detectKey();
+    }
+
+    function drawChordGraphics(chord, index) {
+        const sheetWidth = document.getElementById('lead-sheet').clientWidth - 80;
+        const slotWidth = sheetWidth / 4;
+        const diagDiv = document.getElementById(`diag-svg-${index}`);
+        const tabDiv = document.getElementById(`tab-svg-${index}`);
+        
+        if (!diagDiv || !tabDiv) return;
+
+        diagDiv.innerHTML = ''; 
+        tabDiv.innerHTML = '';
+        
+        const { Renderer, TabStave, Barline } = Vex.Flow;
+        const renderer = new Renderer(tabDiv, Renderer.Backends.SVG);
+        renderer.resize(slotWidth + 10, 160); 
+        const context = renderer.getContext();
+        
+        const stave = new TabStave(0.5, 0, slotWidth);
+        stave.setBegBarType(Barline.type.NONE);
+        stave.setEndBarType(Barline.type.NONE);
+
+        if (index === 0) stave.addClef("tab");
+
+        stave.setContext(context).draw();
+
+        const yTop = stave.getYForLine(0);
+        const yBot = stave.getYForLine(5);
+        const yMid = stave.getYForLine(2.5); 
+        const stemBottomY = yMid + 42; 
+        
+        context.save();
+        context.setStrokeStyle("#000");
+        context.beginPath(); context.setLineWidth(1);
+        context.moveTo(0.5, yTop); context.lineTo(0.5, yBot); context.stroke();
+        
+        if (index === 3) {
+            context.beginPath(); context.setLineWidth(1);
+            context.moveTo(slotWidth - 5.5, yTop); context.lineTo(slotWidth - 5.5, yBot); context.stroke();
+            context.beginPath(); context.setLineWidth(3); 
+            context.moveTo(slotWidth - 1.5, yTop); context.lineTo(slotWidth - 1.5, yBot); context.stroke();
+        } else {
+            context.beginPath(); context.setLineWidth(1);
+            context.moveTo(slotWidth - 0.5, yTop); context.lineTo(slotWidth - 0.5, yBot); context.stroke();
+        }
+        context.restore();
+
+        if (!chord.isEmpty) {
+            const vexParams = chord.frets.map((f, idx) => [idx + 1, (f === 0) ? 0 : (f > 0 ? f : 'x')]);
+            vexchords.draw(`#diag-svg-${index}`, { chord: vexParams }, { 
+                width: 120, height: 140, strokeColor: '#000', fillColor: '#000' 
+            });
+        }
+
+        if (chord.pattern && chord.pattern.length > 0) {
+            const hasStrums = chord.pattern.some(state => state !== '');
+            
+            if (hasStrums) {
+                const startX = (index === 0) ? 42 : 24; 
+                const endPadding = 10; 
+                const availableSpace = slotWidth - startX - endPadding;
+                const step = availableSpace / chord.pattern.length;
+                const sW = chord.pattern.length === 16 ? 3 : 6;
+
+                chord.pattern.forEach((state, i) => {
+                    const x = startX + (i * step);
+                    context.save();
+                    
+                    if (state && state !== '') {
+                        const symbol = state === 'd' ? '↓' : (state === 'u' ? '↑' : (state === 'm' ? '✕' : ''));
+                        const fontSize = chord.pattern.length === 16 ? "14px" : "16px";
+                        context.setFont("Arial", fontSize, "bold");
+                        context.setFillStyle("#000");
+                        const metrics = context.measureText(symbol);
+                        context.fillText(symbol, x - (metrics.width / 2), yTop - 22);
+                    }
+
+                    if (chord.pattern.length >= 8) {
+                        const groupSize = chord.pattern.length === 16 ? 4 : 2;
+                        const isLastInGroup = (i % groupSize) === (groupSize - 1);
+                        const isLastInPattern = i === chord.pattern.length - 1;
+
+                        if (!isLastInGroup && !isLastInPattern && state !== '' && chord.pattern[i + 1] !== '') {
+                            const beamWidth = step;
+                            const beamThickness = 3.5;
+                            context.setFillStyle("#000");
+                            context.fillRect(x - sW, stemBottomY - beamThickness, beamWidth, beamThickness);
+                            if (chord.pattern.length === 16) {
+                                context.fillRect(x - sW, stemBottomY - (beamThickness * 2) - 3, beamWidth, beamThickness);
+                            }
+                        }
+                    }
+
+                    context.setStrokeStyle("#000");
+                    context.setLineCap("round");
+                    
+                    if (state === 'd' || state === 'u') {
+                        context.setLineWidth(2.8); 
+                        context.beginPath();
+                        context.moveTo(x - sW, yMid + 7); 
+                        context.lineTo(x + sW, yMid - 7); 
+                        context.stroke();
+                        
+                        context.setLineWidth(1.2); 
+                        context.beginPath();
+                        context.moveTo(x - sW, yMid + 7); 
+                        context.lineTo(x - sW, stemBottomY); 
+                        context.stroke();
+                    } else if (state === 'm') {
+                        context.setLineWidth(2);
+                        const xSize = 4;
+                        context.beginPath();
+                        context.moveTo(x - xSize, yMid - xSize); context.lineTo(x + xSize, yMid + xSize);
+                        context.moveTo(x + xSize, yMid - xSize); context.lineTo(x - xSize, yMid + xSize);
+                        context.stroke();
+                        
+                        context.setLineWidth(1.2);
+                        context.beginPath();
+                        context.moveTo(x - sW, yMid);
+                        context.lineTo(x - sW, stemBottomY);
+                        context.stroke();
+                    }
+                    context.restore();
+                });
+            }
+        }
+    }
+
+    function detectKey() {
+        const display = document.getElementById('keyDisplay');
+        const filledChords = progressionData.filter(c => !c.isEmpty);
+        if (filledChords.length === 0) { display.innerText = "Key: -"; return; }
+        
+        const anchorChord = progressionData.find(c => !c.isEmpty);
+        const anchorName = anchorChord.name;
+        let allNotes = [];
+        
+        filledChords.forEach(c => {
+            const chordInfo = Tonal.Chord.get(c.name);
+            if (chordInfo && chordInfo.notes) allNotes.push(...chordInfo.notes);
+        });
+        
+        let uniqueNotes = [...new Set(allNotes.map(n => Tonal.Note.get(n).pc))];
+        const rootMatch = anchorName.match(/^[A-G][#b]?/);
+        const firstRoot = rootMatch ? Tonal.Note.get(rootMatch[0]).pc : "C";
+        const isMinor = anchorName.toLowerCase().includes("m") && !anchorName.toLowerCase().includes("maj");
+        const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        
+        let candidates = [];
+        chromatic.forEach(root => {
+            ["major", "minor"].forEach(type => {
+                const scaleNotes = Tonal.Scale.get(`${root} ${type}`).notes;
+                const matchCount = uniqueNotes.filter(n => scaleNotes.includes(n)).length;
+                let score = (matchCount / (uniqueNotes.length || 1)) * 100;
+                if (Tonal.Note.get(root).pc === firstRoot) {
+                    score += 50;
+                    if (isMinor && type === "minor") score += 20;
+                    if (!isMinor && type === "major") score += 20;
+                }
+                candidates.push({ name: `${root} ${type}`, score: score });
+            });
+        });
+        
+        candidates.sort((a, b) => b.score - a.score);
+        display.innerText = `Key: ${candidates[0].name.replace(/\b\w/g, l => l.toUpperCase())}`;
+    }
+
+    // ========================================== //
+    // --- 5. CLIPBOARD LOGIC ---                 //
+    // ========================================== //
+    function handleCopyChord(index) {
+        const source = progressionData[index];
+        if (!source.isEmpty) {
+            clipboardChordOnly = { name: source.name, frets: [...source.frets] };
+            showTooltip("Chord copied", "success");
+            renderSheet(); 
+        }
+    }
+
+    function handlePasteChord(index) {
+        if (clipboardChordOnly) {
+            const target = progressionData[index];
+            progressionData[index] = { 
+                ...target, 
+                name: clipboardChordOnly.name, 
+                frets: [...clipboardChordOnly.frets], 
+                isEmpty: false,
+                resolution: target.resolution || 4,
+                pattern: target.pattern || ['d','','','']
+            };
+            showTooltip("Chord pasted", "success");
+            renderSheet();
+        }
+    }
+
+    function handleCopyStrum(index) {
+        const source = progressionData[index];
+        if (source.pattern) {
+            clipboardStrumOnly = { resolution: source.resolution, pattern: [...source.pattern] };
+            showTooltip("Strumming pattern copied", "success");
+            renderSheet();
+        }
+    }
+
+    function handlePasteStrum(index) {
+        if (clipboardStrumOnly) {
+            const target = progressionData[index];
+            progressionData[index] = { 
+                ...target, 
+                resolution: clipboardStrumOnly.resolution, 
+                pattern: [...clipboardStrumOnly.pattern] 
+            };
+            showTooltip("Strumming pattern pasted", "success");
+            renderSheet();
+        }
+    }
+
+    // ========================================== //
+    // --- 6. STRUM MODAL LOGIC ---               //
+    // ========================================== //
+    function updateStrumModalVisibility() {
+        const modal = document.getElementById('strum-modal');
+        if (selectedSlotIndex !== null) {
+            const chord = progressionData[selectedSlotIndex];
+            if (!chord) {
+                modal.classList.remove('active');
+                return;
+            }
+            
+            modal.classList.add('active');
+            
+            if (!chord.pattern) {
+                chord.pattern = ['d', '', '', ''];
+                chord.resolution = 4;
+            }
+            
+            tempStrumData.pattern = [...chord.pattern];
+            tempStrumData.resolution = chord.resolution;
+            
+            document.getElementById('strum-target-name').innerText = chord.isEmpty ? `Strum: Empty Bar` : `Strum: ${chord.name}`;
+            document.getElementById('resSelect').value = tempStrumData.resolution;
+            
+            const slots = document.querySelectorAll('.progression-slot');
+            if (slots[selectedSlotIndex]) {
+                const rect = slots[selectedSlotIndex].getBoundingClientRect();
+                let leftPos = rect.right + 10; 
+                if (selectedSlotIndex >= 2 || leftPos + 380 > window.innerWidth - 20) {
+                    leftPos = rect.left - 390;
+                    if (leftPos < 10) leftPos = 10; 
+                }
+                modal.style.top = (window.scrollY + rect.top) + "px";
+                modal.style.left = leftPos + "px";
+            }
+            renderStrumGrid();
+        } else {
+            modal.classList.remove('active');
+        }
+    }
+
+    function makeDraggable(el) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        const handle = document.getElementById("strum-handle");
+        handle.onmousedown = (e) => {
+            e.preventDefault();
+            if (e.target.closest('.close-modal-btn')) return; 
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+            document.onmousemove = (e) => {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                el.style.top = (el.offsetTop - pos2) + "px";
+                el.style.left = (el.offsetLeft - pos1) + "px";
+            };
+        };
+    }
+
+    function setTool(tool) {
+        activeBrush = tool;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        const id = tool === '' ? 'tool-erase' : `tool-${tool}`;
+        document.getElementById(id).classList.add('active');
+    }
+
+    function applyBrush(idx) {
+        if (selectedSlotIndex === null) return;
+        tempStrumData.pattern[idx] = activeBrush; 
+        const grid = document.getElementById('strum-grid');
+        const cell = grid.children[idx];
+        if (cell) {
+            let symbol = '';
+            if (activeBrush === 'd') symbol = '&darr;';
+            if (activeBrush === 'u') symbol = '&uarr;';
+            if (activeBrush === 'm') symbol = 'X';
+            cell.className = `strum-cell state-${activeBrush}`;
+            cell.innerHTML = symbol;
+        }
+    }
+
+    function renderStrumGrid() {
+        if (selectedSlotIndex === null) return;
+        const grid = document.getElementById('strum-grid');
+        grid.innerHTML = '';
+
+        tempStrumData.pattern.forEach((state, idx) => {
+            const cell = document.createElement('div');
+            let symbol = '';
+            if (state === 'd') symbol = '&darr;';
+            if (state === 'u') symbol = '&uarr;';
+            if (state === 'm') symbol = 'X';
+            
+            cell.className = `strum-cell state-${state}`;
+            cell.innerHTML = symbol;
+            
+            cell.onmousedown = (e) => {
+                e.preventDefault(); 
+                isPaintingStrums = true;
+                applyBrush(idx);
+            };
+            
+            cell.onmouseenter = (e) => {
+                if (isPaintingStrums) applyBrush(idx);
+            };
+            
+            grid.appendChild(cell);
+        });
+    }
+
+    function clearStrumPattern() {
+        if (selectedSlotIndex === null) return;
+        tempStrumData.pattern = Array(tempStrumData.resolution).fill('');
+        renderStrumGrid();
+    }
+
+    function changeResolution(val) {
+        if (selectedSlotIndex === null) return;
+        const newRes = parseInt(val);
+        const oldRes = tempStrumData.resolution;
+        if (oldRes === newRes) return;
+
+        let newPattern = Array(newRes).fill('');
+        
+        for(let i = 0; i < Math.max(oldRes, newRes); i++) {
+            if (newRes > oldRes) {
+                let targetIdx = Math.floor(i * (newRes / oldRes));
+                if (i < oldRes) newPattern[targetIdx] = tempStrumData.pattern[i];
+            } else {
+                let sourceIdx = Math.floor(i * (oldRes / newRes));
+                if (i < newRes) newPattern[i] = tempStrumData.pattern[sourceIdx];
+            }
+        }
+
+        tempStrumData.resolution = newRes;
+        tempStrumData.pattern = newPattern;
+        renderStrumGrid();
+    }
+
+    function insertStrumming() {
+        if (selectedSlotIndex === null) return;
+        progressionData[selectedSlotIndex].pattern = [...tempStrumData.pattern];
+        progressionData[selectedSlotIndex].resolution = tempStrumData.resolution;
+        renderSheet();
+    }
+
+    // ========================================== //
+    // --- 7. FILE I/O & UI ALERTS ---            //
+    // ========================================== //
+    function showTooltip(message, type = "default") {
+        const x = document.getElementById("snackbar");
+        const txt = document.getElementById("snackbar-text");
+        
+        txt.innerText = message || "Action recorded";
+        x.classList.remove("warning", "success", "show");
+        
+        if (type === "warning") x.classList.add("warning");
+        if (type === "success") x.classList.add("success");
+
+        void x.offsetWidth; 
+        x.classList.add("show");
+
+        setTimeout(function(){ 
+            x.classList.remove("show"); 
+        }, 3000);
+    }
+
+    async function saveProgressionToFile() {
+        const hasAtLeastOneChord = progressionData.some(chord => !chord.isEmpty);
+        if (!hasAtLeastOneChord) {
+            showTooltip("Add at least one chord to save", "warning");
+            return;
+        }
+
+        const currentTitle = document.getElementById('songTitleDisplay').innerText.trim();
+        if (currentTitle === "SONG TITLE" || !titleHasBeenEdited) {
+            showTooltip("Rename 'SONG TITLE' before saving", "warning");
+            const titleEl = document.getElementById('songTitleDisplay');
+            titleEl.style.color = '#db3069';
+            setTimeout(() => titleEl.style.color = '', 1500);
+            return;
+        }
+
+        const currentKey = document.getElementById('keyDisplay').innerText.replace('Key: ', '').trim();
+        const currentBpm = document.getElementById('bpm-value').innerText.trim();
+        
+        const safeTitle = currentTitle.replace(/[^a-z0-9]/gi, '_');
+        const safeKey = currentKey.replace(/[^a-z0-9#]/gi, '_');
+        const fileNameToSave = `phonogram_${safeTitle}_${safeKey}.json`;
+
+        if (localFolderHandle) {
+            try {
+                let fileExists = false;
+                for await (const entry of localFolderHandle.values()) {
+                    if (entry.kind === 'file' && entry.name.toLowerCase() === fileNameToSave.toLowerCase()) {
+                        fileExists = true;
+                        break;
+                    }
+                }
+
+                if (fileExists) {
+                    showTooltip("A progression with this name already exists", "warning");
+                    const titleEl = document.getElementById('songTitleDisplay');
+                    titleEl.style.color = '#db3069';
+                    setTimeout(() => titleEl.style.color = '', 1500);
+                    return;
+                }
+            } catch (err) {
+                console.error("Error checking for existing files:", err);
+            }
+        }
+
+        const chordsWithSVGs = progressionData.map((chord) => {
+            if (chord.isEmpty) return chord;
+            return {
+                name: chord.name,
+                frets: chord.frets,
+                resolution: chord.resolution,
+                pattern: chord.pattern,
+                isEmpty: chord.isEmpty
+            };
+        });
+
+        const exportBundle = {
+            title: currentTitle,
+            key: currentKey,
+            bpm: currentBpm,
+            chords: chordsWithSVGs,
+            exportedAt: new Date().toISOString()
+        };
+
+        const blob = new Blob([JSON.stringify(exportBundle, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = fileNameToSave;
+        a.click();
+        
+        showTooltip("Progression Saved Successfully", "success");
+
+        if (localFolderHandle) {
+            setTimeout(refreshGallery, 2000);
+        }
+    }
+
+    async function connectWatchFolder() {
+        try {
+            localFolderHandle = await window.showDirectoryPicker();
+            document.getElementById('folder-picker-btn').innerText = "Folder Connected";
+            document.getElementById('folder-picker-btn').classList.add('selected');
+            refreshGallery();
+        } catch (err) {
+            console.log("Folder access cancelled or failed.", err);
+        }
+    }
+
+    function toggleAllCheckboxes(master) {
+        const checkboxes = document.querySelectorAll('.bank-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = master.checked;
+            const fileName = cb.getAttribute('data-filename');
+            if (master.checked) selectedFiles.add(fileName);
+            else selectedFiles.delete(fileName);
+        });
+    }
+
+    async function refreshGallery() {
+        if (!localFolderHandle) return;
+        const gallery = document.getElementById('file-gallery');
+        gallery.innerHTML = ''; 
+
+        try {
+            const entries = [];
+            for await (const entry of localFolderHandle.values()) {
+                if (entry.kind === 'file' && entry.name.endsWith('.json')) entries.push(entry);
+            }
+            entries.sort((a, b) => a.name.localeCompare(b.name));
+
+            for (const entry of entries) {
+                const file = await entry.getFile();
+                const content = JSON.parse(await file.text());
+                
+                const row = document.createElement('div');
+                row.className = "bank-row";
+                
+                row.innerHTML = `
+                    <div class="col-check" onclick="event.stopPropagation()">
+                        <input type="checkbox" class="bank-checkbox" data-filename="${entry.name}">
+                    </div>
+                    <div class="col-name">${content.title || entry.name}</div>
+                    <div class="col-key">${content.key || '-'}</div>
+                `;
+                
+                row.onclick = () => loadProgression(content);
+                gallery.appendChild(row);
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    function loadProgression(content) {
+        if (!content || !content.chords) return;
+        
+        progressionData = content.chords;
+        document.getElementById('songTitleDisplay').innerText = content.title || "SONG TITLE";
+        document.getElementById('keyDisplay').innerText = `Key: ${content.key || '-'}`;
+        
+        const bpmValueEl = document.getElementById('bpm-value');
+        if (content.bpm) {
+            bpmValueEl.innerText = content.bpm;
+        } else {
+            bpmValueEl.innerText = "";
+        }
+        
+        titleHasBeenEdited = true;
+        deselectAllSlots();
+        renderSheet();
+        showTooltip(`Loaded: ${content.title}`, "success");
+    }
+
+    // ========================================== //
+    // --- 8. PDF EXPORT ENGINE ---               //
+    // ========================================== //
+    function drawChordGraphicsForPDF_Direct(chord, diagId, tabId, idx, total) {
+        if (!chord.isEmpty) {
+            const vexParams = chord.frets.map((f, i) => [i + 1, (f === 0) ? 0 : (f > 0 ? f : 'x')]);
+            vexchords.draw(`#${diagId}`, { chord: vexParams }, { 
+                width: 100, height: 120, 
+                strokeColor: '#000000', fillColor: '#000000', labelColor: '#000000'
+            });
+        }
+
+        const { Renderer, TabStave, Barline } = Vex.Flow;
+        const div = document.getElementById(tabId);
+        if (!div) return;
+        div.innerHTML = ''; 
+        
+        const slotWidth = 182; 
+        const renderer = new Renderer(div, Renderer.Backends.SVG);
+        renderer.resize(slotWidth, 160); 
+        const context = renderer.getContext();
+        
+        const stave = new TabStave(0, 0, slotWidth);
+        stave.setBegBarType(Barline.type.NONE);
+        stave.setEndBarType(Barline.type.NONE);
+
+        if (idx === 0) stave.addClef("tab");
+
+        stave.setContext(context).draw();
+
+        const yTop = stave.getYForLine(0);
+        const yBot = stave.getYForLine(5);
+        const yMid = stave.getYForLine(2.5); 
+        const stemBottomY = yMid + 42; 
+
+        context.save();
+        context.setStrokeStyle("#000");
+        context.beginPath(); context.setLineWidth(1);
+        context.moveTo(0.5, yTop); context.lineTo(0.5, yBot); context.stroke();
+        
+        if (idx === total - 1) {
+            context.beginPath(); context.setLineWidth(1);
+            context.moveTo(slotWidth - 5.5, yTop); context.lineTo(slotWidth - 5.5, yBot); context.stroke();
+            context.beginPath(); context.setLineWidth(3); 
+            context.moveTo(slotWidth - 1.5, yTop); context.lineTo(slotWidth - 1.5, yBot); context.stroke();
+        } else {
+            context.beginPath(); context.setLineWidth(1);
+            context.moveTo(slotWidth - 0.5, yTop); context.lineTo(slotWidth - 0.5, yBot); context.stroke();
+        }
+        context.restore();
+
+        if (chord.pattern && chord.pattern.length > 0) {
+            const hasStrums = chord.pattern.some(state => state !== '');
+            
+            if (hasStrums) {
+                const startX = (idx === 0) ? 42 : 24; 
+                const endPadding = 10; 
+                const availableSpace = slotWidth - startX - endPadding;
+                const step = availableSpace / chord.pattern.length;
+                const sW = chord.pattern.length === 16 ? 3 : 6;
+
+                chord.pattern.forEach((state, i) => {
+                    const x = startX + (i * step);
+                    context.save();
+                    
+                    if (state && state !== '') {
+                        const symbol = state === 'd' ? '↓' : (state === 'u' ? '↑' : (state === 'm' ? '✕' : ''));
+                        const fontSize = chord.pattern.length === 16 ? "14px" : "16px";
+                        context.setFont("Arial", fontSize, "bold");
+                        context.setFillStyle("#000");
+                        const metrics = context.measureText(symbol);
+                        context.fillText(symbol, x - (metrics.width / 2), yTop - 22);
+                    }
+
+                    if (chord.pattern.length >= 8) {
+                        const groupSize = chord.pattern.length === 16 ? 4 : 2;
+                        const isLastInGroup = (i % groupSize) === (groupSize - 1);
+                        const isLastInPattern = i === chord.pattern.length - 1;
+
+                        if (!isLastInGroup && !isLastInPattern && state !== '' && chord.pattern[i + 1] !== '') {
+                            const beamWidth = step;
+                            const beamThickness = 3.5;
+                            context.setFillStyle("#000");
+                            context.fillRect(x - sW, stemBottomY - beamThickness, beamWidth, beamThickness);
+
+                            if (chord.pattern.length === 16) {
+                                context.fillRect(x - sW, stemBottomY - (beamThickness * 2) - 3, beamWidth, beamThickness);
+                            }
+                        }
+                    }
+
+                    context.setStrokeStyle("#000");
+                    context.setLineCap("round");
+                    
+                    if (state === 'd' || state === 'u') {
+                        context.setLineWidth(2.8); 
+                        context.beginPath();
+                        context.moveTo(x - sW, yMid + 7); 
+                        context.lineTo(x + sW, yMid - 7); 
+                        context.stroke();
+                        
+                        context.setLineWidth(1.2); 
+                        context.beginPath();
+                        context.moveTo(x - sW, yMid + 7); 
+                        context.lineTo(x - sW, stemBottomY); 
+                        context.stroke();
+                    } else if (state === 'm') {
+                        context.setLineWidth(2);
+                        const xSize = 4;
+                        context.beginPath();
+                        context.moveTo(x - xSize, yMid - xSize); context.lineTo(x + xSize, yMid + xSize);
+                        context.moveTo(x + xSize, yMid - xSize); context.lineTo(x - xSize, yMid + xSize);
+                        context.stroke();
+                        
+                        context.setLineWidth(1.2);
+                        context.beginPath();
+                        context.moveTo(x - sW, yMid);
+                        context.lineTo(x - sW, stemBottomY);
+                        context.stroke();
+                    }
+                    context.restore();
+                });
+            }
+        }
+    }
+
+    async function exportSelectedToPDF() {
+        const checkboxes = document.querySelectorAll('.bank-checkbox:checked');
+        if (checkboxes.length === 0) return;
+
+        const staging = document.getElementById('pdf-pages-staging');
+        staging.innerHTML = '<style>#pdf-pages-staging svg { margin-bottom: 20px; }</style>'; 
+        
+        document.getElementById('pdf-preview-modal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        let currentPage = createPdfPage();
+        staging.appendChild(currentPage);
+        let count = 0;
+
+        for (const cb of checkboxes) {
+            const fileName = cb.getAttribute('data-filename');
+            const fileHandle = await localFolderHandle.getFileHandle(fileName);
+            const file = await fileHandle.getFile();
+            const data = JSON.parse(await file.text());
+            const safeID = fileName.replace(/[^a-z0-9]/gi, '-');
+
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = "margin-bottom: 20px; color: black; width: 100%; font-family: 'Outfit', sans-serif;";
+            
+            const header = document.createElement('div');
+            header.style.marginBottom = "15px";
+            let bpmHtml = data.bpm ? `<span style="margin-left: 20px;">BPM: ${data.bpm}</span>` : '';
+            
+            header.innerHTML = `
+                <h2 style="font-size: 1.6rem; font-weight: 800; margin: 0 0 5px 0; text-transform: uppercase;">${data.title}</h2>
+                <div style="font-size: 1rem; color: #444; font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 700;">
+                    <span>Key: ${data.key || '-'}</span>
+                    ${bpmHtml}
+                </div>
+            `;
+            wrapper.appendChild(header); 
+            
+            const gridContainer = document.createElement('div');
+            gridContainer.id = `pdf-grid-${safeID}`;
+            gridContainer.style.cssText = "display: grid; grid-template-columns: repeat(4, 182px); grid-gap: 0; width: 728px; margin: 0 auto;";
+            wrapper.appendChild(gridContainer);
+
+            if (count >= 2) { 
+                currentPage = createPdfPage();
+                staging.appendChild(currentPage);
+                count = 0;
+            }
+            currentPage.appendChild(wrapper);
+            count++;
+
+            data.chords.forEach((chord, idx) => {
+                const slot = document.createElement('div');
+                slot.style.cssText = "text-align: center; padding: 0; margin: 0; overflow: hidden;";
+                
+                slot.innerHTML = `
+                    <div style="font-weight: 800; font-size: 1.2rem; margin-bottom: 5px; height: 25px;">
+                        ${chord.isEmpty ? '' : chord.name}
+                    </div>
+                    <div id="diag-${safeID}-${idx}" style="margin-bottom: -10px;"></div>
+                    <div id="tab-${safeID}-${idx}"></div>
+                `;
+                gridContainer.appendChild(slot);
+                drawChordGraphicsForPDF_Direct(chord, `diag-${safeID}-${idx}`, `tab-${safeID}-${idx}`, idx, data.chords.length);
+            });
+        }
+    }
+
+    function createPdfPage() {
+        const page = document.createElement('div');
+        page.style.cssText = `
+            background: white !important; 
+            width: 850px; 
+            height: 1060px; 
+            padding: 100px 50px 0px 50px; 
+            margin: 0 auto 40px auto; 
+            color: black !important; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px; 
+            overflow: hidden; 
+            position: relative; 
+            border: none; 
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        `;
+        return page;
+    }
+
+    function triggerFinalPDF() {
+        const element = document.getElementById('pdf-pages-staging');
+        const snackbar = document.getElementById("snackbar");
+        const statusText = document.getElementById("snackbar-text");
+        const progressBar = document.getElementById("export-progress-bar");
+
+        statusText.innerText = "Generating PDF...";
+        progressBar.style.width = "0%";
+        
+        snackbar.className = ""; 
+        snackbar.classList.add("show", "export-mode", "success");
+
+        const highestId = window.setTimeout(() => {}, 0);
+        for (let i = 0; i < highestId; i++) { window.clearTimeout(i); }
+
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = `${progress}%`;
+            }
+        }, 300);
+
+        setTimeout(() => {
+            const opt = {
+                margin: 0,
+                filename: `Phonogram_Session_Sheet.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                pagebreak: { mode: ['css', 'legacy'] },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: '#ffffff',
+                    scrollY: 0,
+                    scrollX: 0,
+                    windowY: 0,
+                    windowX: 0,
+                    width: 850
+                },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                clearInterval(progressInterval);
+                progressBar.style.width = "100%";
+                statusText.innerText = "Export Complete";
+                
+                setTimeout(() => {
+                    snackbar.classList.remove("show", "export-mode");
+                }, 1500);
+            }).catch(err => {
+                clearInterval(progressInterval);
+                statusText.innerText = "Export Failed";
+                snackbar.classList.add("warning");
+                console.error("PDF Export Error:", err);
+            });
+        }, 500); 
+    }
+
+    window.closePreview = function() {
+        const overlay = document.getElementById('pdf-preview-modal');
+        if (overlay) {
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+            const staging = document.getElementById('pdf-pages-staging');
+            if (staging) staging.innerHTML = '';
+        } else {
+            console.error("Error: Could not find 'pdf-preview-modal'.");
+        }
+    };
+</script>
+</body>
+</html>
