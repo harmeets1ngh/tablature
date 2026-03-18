@@ -147,7 +147,8 @@
         .strum-footer { display: flex; justify-content: flex-end; margin-top: 5px; }
 
         /* --- SNACKBAR & ALERTS --- */
-        #snackbar { visibility: hidden; min-width: 320px; background-color: #ffffff; color: #121212; border-radius: 8px; padding: 16px 24px; position: fixed; z-index: 5000; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.75rem; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: visibility 0s, opacity 0.3s ease-in-out; opacity: 0; }
+        /* UPDATE: Moved to top: 30px to prevent being hidden in tall Wix iframes */
+        #snackbar { visibility: hidden; min-width: 320px; background-color: #ffffff; color: #121212; border-radius: 8px; padding: 16px 24px; position: fixed; z-index: 5000; left: 50%; top: 30px; transform: translateX(-50%); font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.75rem; box-shadow: 0 15px 35px rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: visibility 0s, opacity 0.3s ease-in-out; opacity: 0; }
         #snackbar.warning { border-left: 6px solid #db3069; }
         .warn-icon { display: none; width: 20px; height: 20px; background: #db3069; color: white; border-radius: 50%; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; }
         #snackbar.warning .icon-warn { display: flex; background: #db3069; }
@@ -211,9 +212,9 @@
         .progress-bar-fill { width: 0%; height: 100%; background: #28a745; transition: width 0.3s ease; }
         .tooltip.success .progress-bar-fill { background: #ffffff; }
 
-        /* Animations */
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        /* Animations updated for top-down dropdown */
+        @keyframes fadein { from {top: 0; opacity: 0;} to {top: 30px; opacity: 1;} }
+        @keyframes fadeout { from {top: 30px; opacity: 1;} to {top: 0; opacity: 0;} }
 
         /* Print Media Styles */
         @media print { 
@@ -450,6 +451,7 @@
     // Cloud Memory Data
     let cloudBankData = []; 
     let previousBpm = "";
+    let tooltipTimeout; // To fix tooltip overriding
 
     // ========================================== //
     // --- 2. INITIALIZATION & EVENTS ---         //
@@ -483,6 +485,9 @@
             renderCloudGallery();
         } else if (event.data.type === "SAVE_SUCCESS") {
             showTooltip("Saved to Phonogram Cloud", "success");
+        } else if (event.data.type === "AUTH_ERROR") {
+            // Display auth warning popup if not logged in
+            showTooltip(event.data.message, "warning");
         }
     }
 
@@ -1228,6 +1233,8 @@
     // ========================================== //
     // --- 7. WIX CLOUD I/O & UI ALERTS ---       //
     // ========================================== //
+    
+    // UPDATE: Implemented timeout clearance to prevent tooltips from prematurely hiding
     function showTooltip(message, type = "default") {
         const x = document.getElementById("snackbar");
         const txt = document.getElementById("snackbar-text");
@@ -1241,12 +1248,12 @@
         void x.offsetWidth; 
         x.classList.add("show");
 
-        setTimeout(function(){ 
+        clearTimeout(tooltipTimeout);
+        tooltipTimeout = setTimeout(function(){ 
             x.classList.remove("show"); 
         }, 3000);
     }
 
-    // NEW: Send to Wix instead of local file
     function saveProgressionToFile() {
         const hasAtLeastOneChord = progressionData.some(chord => !chord.isEmpty);
         if (!hasAtLeastOneChord) {
@@ -1261,6 +1268,18 @@
             titleEl.style.color = '#db3069';
             setTimeout(() => titleEl.style.color = '', 1500);
             return;
+        }
+
+        // UPDATE: Cloud Memory Overwrite Check
+        let existingId = null;
+        const existingSession = cloudBankData.find(session => session.title.toLowerCase() === currentTitle.toLowerCase());
+        
+        if (existingSession) {
+            const confirmOverwrite = confirm(`A progression named "${currentTitle}" already exists.\n\nClick OK to overwrite it, or Cancel to rename your session.`);
+            if (!confirmOverwrite) {
+                return; // User canceled the save
+            }
+            existingId = existingSession._id;
         }
 
         const currentKey = document.getElementById('keyDisplay').innerText.replace('Key: ', '').trim();
@@ -1284,13 +1303,18 @@
             chords: chordsWithSVGs
         };
 
+        // If replacing an existing file, append the ID to the payload
+        if (existingId) {
+            exportBundle._id = existingId;
+        }
+
         // SEND TO WIX
         window.parent.postMessage({
             type: "SAVE_SESSION",
             payload: exportBundle
         }, "*");
         
-        showTooltip("Saving to Cloud...", "default");
+        showTooltip(existingId ? "Updating Cloud Session..." : "Saving to Cloud...", "default");
     }
 
     function toggleAllCheckboxes(master) {
@@ -1300,7 +1324,6 @@
         });
     }
 
-    // NEW: Render gallery from Cloud Memory
     function renderCloudGallery() {
         const gallery = document.getElementById('file-gallery');
         gallery.innerHTML = ''; 
@@ -1473,7 +1496,6 @@
         }
     }
 
-    // NEW: Export pulling from Cloud Memory
     async function exportSelectedToPDF() {
         const checkboxes = document.querySelectorAll('.bank-checkbox:checked');
         if (checkboxes.length === 0) return;
