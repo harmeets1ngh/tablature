@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Phonogram | Session Architect Pro</title>
+    <title>Phonogram | Tablature</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -340,10 +340,10 @@
 
     <div id="bank-container" class="no-print" style="margin-top: 50px; border-top: 1px solid #333; padding-top: 30px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK</h3>
+            <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK (CLOUD)</h3>
             <div style="display: flex; gap: 10px;">
                 <button id="export-pdf-btn" class="btn btn-primary" onclick="exportSelectedToPDF()">Export Selected (PDF)</button>
-                <button id="folder-picker-btn" class="btn btn-secondary" onclick="connectWatchFolder()">Connect Watch Folder</button>
+                <button id="refresh-bank-btn" class="btn btn-secondary" onclick="requestCloudSessions()">Refresh Bank</button>
             </div>
         </div>
         
@@ -353,7 +353,7 @@
                 <div>Name</div>
                 <div>Key</div>
             </div>
-            <div id="file-gallery">...</div>
+            <div id="file-gallery">... Loading cloud sessions ...</div>
         </div>
         
         <div id="snackbar">
@@ -447,9 +447,8 @@
     let isPaintingStrums = false; 
     let currentlySelectedChordName = "";
     
-    // File Handle Memory
-    let localFolderHandle = null;
-    let selectedFiles = new Set();
+    // Cloud Memory Data
+    let cloudBankData = []; 
     let previousBpm = "";
 
     // ========================================== //
@@ -465,9 +464,33 @@
             if(selectedSlotIndex !== null) updateStrumModalVisibility();
         });
 
+        // Listen for messages from Wix
+        window.addEventListener('message', handleWixMessages);
+
         renderFretboard();
         renderSheet();
+        
+        // Request sessions from Wix on load
+        requestCloudSessions();
     };
+
+    // Handle incoming data from Wix Velo
+    function handleWixMessages(event) {
+        if (!event.data) return;
+        
+        if (event.data.type === "LOAD_SESSIONS") {
+            cloudBankData = event.data.payload;
+            renderCloudGallery();
+        } else if (event.data.type === "SAVE_SUCCESS") {
+            showTooltip("Saved to Phonogram Cloud", "success");
+        }
+    }
+
+    // Ask Wix to send down the latest database entries
+    function requestCloudSessions() {
+        document.getElementById('file-gallery').innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">Syncing with Phonogram Cloud...</div>';
+        window.parent.postMessage({ type: "REQUEST_SESSIONS" }, "*");
+    }
 
     function initBpmListeners() {
         const bpmValue = document.getElementById('bpm-value');
@@ -1203,7 +1226,7 @@
     }
 
     // ========================================== //
-    // --- 7. FILE I/O & UI ALERTS ---            //
+    // --- 7. WIX CLOUD I/O & UI ALERTS ---       //
     // ========================================== //
     function showTooltip(message, type = "default") {
         const x = document.getElementById("snackbar");
@@ -1223,7 +1246,8 @@
         }, 3000);
     }
 
-    async function saveProgressionToFile() {
+    // NEW: Send to Wix instead of local file
+    function saveProgressionToFile() {
         const hasAtLeastOneChord = progressionData.some(chord => !chord.isEmpty);
         if (!hasAtLeastOneChord) {
             showTooltip("Add at least one chord to save", "warning");
@@ -1242,32 +1266,6 @@
         const currentKey = document.getElementById('keyDisplay').innerText.replace('Key: ', '').trim();
         const currentBpm = document.getElementById('bpm-value').innerText.trim();
         
-        const safeTitle = currentTitle.replace(/[^a-z0-9]/gi, '_');
-        const safeKey = currentKey.replace(/[^a-z0-9#]/gi, '_');
-        const fileNameToSave = `phonogram_${safeTitle}_${safeKey}.json`;
-
-        if (localFolderHandle) {
-            try {
-                let fileExists = false;
-                for await (const entry of localFolderHandle.values()) {
-                    if (entry.kind === 'file' && entry.name.toLowerCase() === fileNameToSave.toLowerCase()) {
-                        fileExists = true;
-                        break;
-                    }
-                }
-
-                if (fileExists) {
-                    showTooltip("A progression with this name already exists", "warning");
-                    const titleEl = document.getElementById('songTitleDisplay');
-                    titleEl.style.color = '#db3069';
-                    setTimeout(() => titleEl.style.color = '', 1500);
-                    return;
-                }
-            } catch (err) {
-                console.error("Error checking for existing files:", err);
-            }
-        }
-
         const chordsWithSVGs = progressionData.map((chord) => {
             if (chord.isEmpty) return chord;
             return {
@@ -1283,75 +1281,50 @@
             title: currentTitle,
             key: currentKey,
             bpm: currentBpm,
-            chords: chordsWithSVGs,
-            exportedAt: new Date().toISOString()
+            chords: chordsWithSVGs
         };
 
-        const blob = new Blob([JSON.stringify(exportBundle, null, 2)], { type: "application/json" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = fileNameToSave;
-        a.click();
+        // SEND TO WIX
+        window.parent.postMessage({
+            type: "SAVE_SESSION",
+            payload: exportBundle
+        }, "*");
         
-        showTooltip("Progression Saved Successfully", "success");
-
-        if (localFolderHandle) {
-            setTimeout(refreshGallery, 2000);
-        }
-    }
-
-    async function connectWatchFolder() {
-        try {
-            localFolderHandle = await window.showDirectoryPicker();
-            document.getElementById('folder-picker-btn').innerText = "Folder Connected";
-            document.getElementById('folder-picker-btn').classList.add('selected');
-            refreshGallery();
-        } catch (err) {
-            console.log("Folder access cancelled or failed.", err);
-        }
+        showTooltip("Saving to Cloud...", "default");
     }
 
     function toggleAllCheckboxes(master) {
         const checkboxes = document.querySelectorAll('.bank-checkbox');
         checkboxes.forEach(cb => {
             cb.checked = master.checked;
-            const fileName = cb.getAttribute('data-filename');
-            if (master.checked) selectedFiles.add(fileName);
-            else selectedFiles.delete(fileName);
         });
     }
 
-    async function refreshGallery() {
-        if (!localFolderHandle) return;
+    // NEW: Render gallery from Cloud Memory
+    function renderCloudGallery() {
         const gallery = document.getElementById('file-gallery');
         gallery.innerHTML = ''; 
 
-        try {
-            const entries = [];
-            for await (const entry of localFolderHandle.values()) {
-                if (entry.kind === 'file' && entry.name.endsWith('.json')) entries.push(entry);
-            }
-            entries.sort((a, b) => a.name.localeCompare(b.name));
+        if (cloudBankData.length === 0) {
+            gallery.innerHTML = '<div style="padding: 20px; color: #888;">No sessions found in Cloud.</div>';
+            return;
+        }
 
-            for (const entry of entries) {
-                const file = await entry.getFile();
-                const content = JSON.parse(await file.text());
-                
-                const row = document.createElement('div');
-                row.className = "bank-row";
-                
-                row.innerHTML = `
-                    <div class="col-check" onclick="event.stopPropagation()">
-                        <input type="checkbox" class="bank-checkbox" data-filename="${entry.name}">
-                    </div>
-                    <div class="col-name">${content.title || entry.name}</div>
-                    <div class="col-key">${content.key || '-'}</div>
-                `;
-                
-                row.onclick = () => loadProgression(content);
-                gallery.appendChild(row);
-            }
-        } catch (err) { console.error(err); }
+        cloudBankData.forEach((session) => {
+            const row = document.createElement('div');
+            row.className = "bank-row";
+            
+            row.innerHTML = `
+                <div class="col-check" onclick="event.stopPropagation()">
+                    <input type="checkbox" class="bank-checkbox" data-id="${session._id}">
+                </div>
+                <div class="col-name">${session.title}</div>
+                <div class="col-key">${session.key || '-'}</div>
+            `;
+            
+            row.onclick = () => loadProgression(session);
+            gallery.appendChild(row);
+        });
     }
 
     function loadProgression(content) {
@@ -1500,6 +1473,7 @@
         }
     }
 
+    // NEW: Export pulling from Cloud Memory
     async function exportSelectedToPDF() {
         const checkboxes = document.querySelectorAll('.bank-checkbox:checked');
         if (checkboxes.length === 0) return;
@@ -1515,11 +1489,11 @@
         let count = 0;
 
         for (const cb of checkboxes) {
-            const fileName = cb.getAttribute('data-filename');
-            const fileHandle = await localFolderHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            const data = JSON.parse(await file.text());
-            const safeID = fileName.replace(/[^a-z0-9]/gi, '-');
+            const sessionID = cb.getAttribute('data-id');
+            const data = cloudBankData.find(item => item._id === sessionID);
+            if (!data) continue;
+            
+            const safeID = sessionID.replace(/[^a-z0-9]/gi, '-');
 
             const wrapper = document.createElement('div');
             wrapper.style.cssText = "margin-bottom: 20px; color: black; width: 100%; font-family: 'Outfit', sans-serif;";
@@ -1615,7 +1589,7 @@
         setTimeout(() => {
             const opt = {
                 margin: 0,
-                filename: `Phonogram_Session_Sheet.pdf`,
+                filename: `Phonogram_Tablature_Sheet.pdf`,
                 image: { type: 'jpeg', quality: 1.0 },
                 pagebreak: { mode: ['css', 'legacy'] },
                 html2canvas: { 
