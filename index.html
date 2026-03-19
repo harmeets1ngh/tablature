@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <script src="https://unpkg.com/vexchords@1.2.0/dist/vexchords.dev.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
     
     <style>
         /* --- GLOBAL BASE --- */
@@ -344,7 +345,7 @@
 
     <div id="bank-container" class="no-print" style="margin-top: 50px; border-top: 1px solid #333; padding-top: 30px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK (CLOUD)</h3>
+            <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK (VAULT)</h3>
             <div style="display: flex; gap: 10px;">
                 <button id="export-pdf-btn" class="btn btn-primary" onclick="exportSelectedToPDF()">Export Selected (PDF)</button>
                 <button id="refresh-bank-btn" class="btn btn-secondary" onclick="requestCloudSessions()">Refresh Bank</button>
@@ -358,7 +359,7 @@
                 <div>Key</div>
                 <div>BPM</div>
             </div>
-            <div id="file-gallery">... Loading cloud sessions ...</div>
+            <div id="file-gallery">... Loading vault sessions ...</div>
         </div>
         
         <div id="snackbar">
@@ -443,6 +444,14 @@
 
 <script>
     // ========================================== //
+    // --- 0. STANDALONE DATABASE SETUP ---       //
+    // ========================================== //
+    const db = new Dexie("PhonogramDB");
+    db.version(1).stores({
+        sessions: '++id, title, key, bpm, timestamp'
+    });
+
+    // ========================================== //
     // --- 1. STATE & GLOBALS ---                 //
     // ========================================== //
     const tuning = ["E4", "B3", "G3", "D3", "A2", "E2"];
@@ -466,7 +475,7 @@
     // Cloud Memory Data
     let cloudBankData = []; 
     let previousBpm = "";
-    let tooltipTimeout; // To fix tooltip overriding
+    let tooltipTimeout; 
 
     // ========================================== //
     // --- 2. INITIALIZATION & EVENTS ---         //
@@ -481,35 +490,24 @@
             if(selectedSlotIndex !== null) updateStrumModalVisibility();
         });
 
-        // Listen for messages from Wix
-        window.addEventListener('message', handleWixMessages);
-
         renderFretboard();
         renderSheet();
-        
-        // Request sessions from Wix on load
         requestCloudSessions();
     };
 
-    // Handle incoming data from Wix Velo
-    function handleWixMessages(event) {
-        if (!event.data) return;
-        
-        if (event.data.type === "LOAD_SESSIONS") {
-            cloudBankData = event.data.payload;
+    // DB: Load Sessions
+    async function requestCloudSessions() {
+        document.getElementById('file-gallery').innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">Loading vault sessions...</div>';
+        try {
+            const sessions = await db.sessions.orderBy('timestamp').reverse().toArray();
+            cloudBankData = sessions;
+            // Map dexie ID to _id to match existing UI
+            cloudBankData.forEach(s => s._id = s.id);
             renderCloudGallery();
-        } else if (event.data.type === "SAVE_SUCCESS") {
-            showTooltip("Saved to Phonogram Cloud", "success");
-        } else if (event.data.type === "AUTH_ERROR") {
-            // Display auth warning popup if not logged in
-            showTooltip(event.data.message, "warning");
+        } catch (err) {
+            console.error("DB Load Error:", err);
+            showTooltip("Error loading vault", "warning");
         }
-    }
-
-    // Ask Wix to send down the latest database entries
-    function requestCloudSessions() {
-        document.getElementById('file-gallery').innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">Your saved progressions will appear here.</div>';
-        window.parent.postMessage({ type: "REQUEST_SESSIONS" }, "*");
     }
 
     function initBpmListeners() {
@@ -1246,7 +1244,7 @@
     }
 
     // ========================================== //
-    // --- 7. WIX CLOUD I/O & UI ALERTS ---       //
+    // --- 7. DB SAVE & UI ALERTS ---             //
     // ========================================== //
     function showTooltip(message, type = "default") {
         const x = document.getElementById("snackbar");
@@ -1276,7 +1274,7 @@
         msgEl.innerText = message;
         modal.style.display = 'flex';
 
-        // Clone nodes to remove old event listeners and prevent multiple triggers
+        // Clone nodes to remove old event listeners
         const newBtnOk = btnOk.cloneNode(true);
         const newBtnCancel = btnCancel.cloneNode(true);
         btnOk.parentNode.replaceChild(newBtnOk, btnOk);
@@ -1312,7 +1310,7 @@
         
         if (existingSession) {
             showConfirmModal(
-                `A progression named "${currentTitle}" already exists in your cloud bank.\n\nDo you want to overwrite it?`,
+                `A progression named "${currentTitle}" already exists in your vault.\n\nDo you want to overwrite it?`,
                 () => { proceedWithCloudSave(existingSession._id, currentTitle); }
             );
         } else {
@@ -1320,7 +1318,8 @@
         }
     }
 
-    function proceedWithCloudSave(existingId, currentTitle) {
+    // DB: Save Session
+    async function proceedWithCloudSave(existingId, currentTitle) {
         const currentKey = document.getElementById('keyDisplay').innerText.replace('Key: ', '').trim();
         const currentBpm = document.getElementById('bpm-value').innerText.trim();
         
@@ -1339,19 +1338,22 @@
             title: currentTitle,
             key: currentKey,
             bpm: currentBpm,
-            chords: chordsWithSVGs
+            chords: chordsWithSVGs,
+            timestamp: Date.now()
         };
 
-        if (existingId) {
-            exportBundle._id = existingId;
+        try {
+            if (existingId) {
+                await db.sessions.update(existingId, exportBundle);
+            } else {
+                await db.sessions.add(exportBundle);
+            }
+            showTooltip("Saved to Vault", "success");
+            requestCloudSessions(); 
+        } catch (err) {
+            console.error("DB Save Error:", err);
+            showTooltip("Error saving", "warning");
         }
-
-        window.parent.postMessage({
-            type: "SAVE_SESSION",
-            payload: exportBundle
-        }, "*");
-        
-        showTooltip(existingId ? "Updating Cloud Session..." : "Saving to Cloud...", "default");
     }
 
     function toggleAllCheckboxes(master) {
@@ -1366,7 +1368,7 @@
         gallery.innerHTML = ''; 
 
         if (cloudBankData.length === 0) {
-            gallery.innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">No sessions found in Cloud.</div>';
+            gallery.innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">No sessions found in Vault.</div>';
             return;
         }
 
@@ -1550,10 +1552,11 @@
 
         for (const cb of checkboxes) {
             const sessionID = cb.getAttribute('data-id');
-            const data = cloudBankData.find(item => item._id === sessionID);
+            // Ensure ID comparison works whether string or int from DB
+            const data = cloudBankData.find(item => item._id == sessionID);
             if (!data) continue;
             
-            const safeID = sessionID.replace(/[^a-z0-9]/gi, '-');
+            const safeID = String(sessionID).replace(/[^a-z0-9]/gi, '-');
 
             const wrapper = document.createElement('div');
             wrapper.style.cssText = "margin-bottom: 20px; color: black; width: 100%; font-family: 'Outfit', sans-serif;";
