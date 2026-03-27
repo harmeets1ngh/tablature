@@ -13,6 +13,7 @@
     <script src="https://unpkg.com/vexchords@1.2.0/dist/vexchords.dev.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <style>
         /* --- GLOBAL BASE --- */
@@ -339,6 +340,7 @@
     </div>
 
     <div class="action-footer no-print">
+        <button class="btn btn-primary btn-wide" onclick="saveToPhonogramCloud()">Test Cloud Save</button>
         <button class="btn btn-primary btn-wide" onclick="saveProgressionToFile()">Save Progression</button>
         <button class="btn btn-secondary btn-wide" onclick="resetFullProgression()">Clear Sheet</button>
     </div>
@@ -476,6 +478,11 @@
     let cloudBankData = []; 
     let previousBpm = "";
     let tooltipTimeout; 
+
+    // 1. Initialize Supabase
+    const supabaseUrl = 'https://wcqahyhmjgbombrrdoqr.supabase.co';
+    const supabaseKey = 'sb_publishable_rxgMgUb0z94bdBVN7xJOoA_Azbcduwm';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // ========================================== //
     // --- 2. INITIALIZATION & EVENTS ---         //
@@ -1355,6 +1362,46 @@
             showTooltip("Error saving", "warning");
         }
     }
+
+    // 2. The Cloud Save Function
+    window.saveToPhonogramCloud = async function() {
+        // Gather the current data from the UI (matching your existing logic)
+        const currentTitle = document.getElementById('songTitleDisplay').innerText || "Untitled Progression";
+        const currentKey = document.getElementById('keyDisplay').innerText || "C";
+        const currentBpm = parseInt(document.getElementById('bpm-value').innerText) || 120;
+        
+        // window.currentProgression should contain your array of chord objects
+        const progressionData = window.currentProgression; 
+
+        if (!progressionData || progressionData.length === 0) {
+            alert("Nothing to save! Add some chords first.");
+            return;
+        }
+
+        try {
+            // Send the data to the 'progressions' table in Supabase
+            const { data, error } = await supabase
+                .from('progressions')
+                .insert([
+                    { 
+                        title: currentTitle, 
+                        song_key: currentKey, 
+                        bpm: currentBpm, 
+                        payload: progressionData 
+                    }
+                ]);
+
+            if (error) throw error;
+
+            // Success Feedback
+            console.log("Saved successfully:", data);
+            alert("Progression saved to the Phonogram Cloud!");
+            
+        } catch (error) {
+            console.error("Error saving to cloud:", error.message);
+            alert("Failed to save progression. Check the console for details.");
+        }
+    };
 
     function toggleAllCheckboxes(master) {
         const checkboxes = document.querySelectorAll('.bank-checkbox');
