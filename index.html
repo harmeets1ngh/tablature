@@ -1450,17 +1450,20 @@
         cloudBankData.forEach(item => {
             const row = document.createElement('div');
             row.className = 'bank-row';
-            // Add the checkbox and the hidden delete button
+            
+            // FIX: Use item.id (not item._id) to match your Supabase data
+            const recordId = item.id; 
+
             row.innerHTML = `
                 <div class="col-check">
-                    <input type="checkbox" class="bank-checkbox" data-id="${item._id}" onclick="event.stopPropagation()">
+                    <input type="checkbox" class="bank-checkbox" data-id="${recordId}" onclick="event.stopPropagation()">
                 </div>
-                <div class="col-name" onclick="loadProgression('${item._id}')">${item.title || 'Untitled'}</div>
+                <div class="col-name" onclick="loadProgression('${recordId}')">
+                    ${item.title || 'Untitled'}
+                </div>
                 <div class="col-key">${item.key || '--'}</div>
                 <div class="col-bpm">${item.bpm || '--'}</div>
-                <button class="row-delete-btn" onclick="openDeleteModal('${item._id}', event)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
+                <button class="row-delete-btn" style="background:none;" onclick="openDeleteModal('${recordId}', event)">×</button>
             `;
             container.appendChild(row);
         });
