@@ -172,27 +172,27 @@
         .bank-row .col-name { color: #fff; font-weight: 500; font-size: 0.9rem; }
         .bank-row .col-key { color: #db3069; font-family: monospace; font-size: 0.85rem; font-weight: 600; }
 
+        /* Bank Row Delete Button (Matches Action-Icon-Btn styles from lead sheet) */
         .row-delete-btn {
             position: absolute;
             right: 20px;
             top: 50%;
             transform: translateY(-50%);
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: color 0.2s, opacity 0.2s;
             background: none;
-            color: white;
+            color: #999;
             border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
             z-index: 10;
         }
 
         .bank-row:hover .row-delete-btn { opacity: 1; }
+        .row-delete-btn:hover { color: #db3069; }
 
         /* Deletion Modal Styles */
         .modal-overlay {
@@ -356,7 +356,7 @@
             </div>
             <div class="btn-group">
                 <button class="btn btn-primary" id="btnAddTop" onclick="addChordToSheet()">Add to Sheet</button>
-                <button class="btn btn-secondary" onclick="clearFretboard()">Clear Chord</button>
+                <button class="btn btn-secondary" id="btn-clear-chord" onclick="clearFretboard()" disabled>Clear Chord</button>
             </div>
         </div>
     </div>
@@ -386,15 +386,15 @@
     </div>
 
     <div class="action-footer no-print">
-        <button class="btn btn-primary btn-wide" onclick="saveProgressionToFile()">Save Progression</button>
-        <button class="btn btn-secondary btn-wide" onclick="resetFullProgression()">Clear Sheet</button>
+        <button class="btn btn-primary btn-wide" id="btn-save-progression" onclick="saveProgressionToFile()" disabled>Save Progression</button>
+        <button class="btn btn-secondary btn-wide" id="btn-clear-sheet" onclick="resetFullProgression()" disabled>Clear Sheet</button>
     </div>
 
     <div id="bank-container" class="no-print" style="margin-top: 50px; border-top: 1px solid #333; padding-top: 30px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK</h3>
             <div style="display: flex; gap: 10px;">
-                <button id="export-pdf-btn" class="btn btn-primary" onclick="exportSelectedToPDF()">Export Selected (PDF)</button>
+                <button id="export-pdf-btn" class="btn btn-secondary" disabled onclick="exportSelectedToPDF()">Export Selected (PDF)</button>
                 <button id="btn-delete-selected" class="btn btn-secondary btn-sm" disabled onclick="openDeleteModal(null)">Delete Selected</button>
             </div>
         </div>
@@ -553,6 +553,22 @@
         requestCloudSessions();
     };
 
+    // UI Updater for conditional Action Buttons
+    function updateLeadSheetButtons() {
+        const btnSave = document.getElementById('btn-save-progression');
+        const btnClear = document.getElementById('btn-clear-sheet');
+        
+        // Save Progression is active if there is at least one non-empty chord block
+        const hasProgression = progressionData.some(chord => !chord.isEmpty);
+        if (btnSave) btnSave.disabled = !hasProgression;
+        
+        // Clear Sheet is active if anything differs from the default blank setup
+        const title = document.getElementById('songTitleDisplay').innerText.trim();
+        const bpm = document.getElementById('bpm-value').innerText.trim();
+        const hasAnyChange = progressionData.length > 0 || (title !== "SONG TITLE" && title !== "") || bpm !== "";
+        if (btnClear) btnClear.disabled = !hasAnyChange;
+    }
+
     // DB: Load Sessions from Supabase
     async function requestCloudSessions() {
         document.getElementById('file-gallery').innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">Loading cloud sessions...</div>';
@@ -567,7 +583,7 @@
 
             // Map Supabase columns to our local app state format
             cloudBankData = data.map(item => ({
-                _id: item.id,
+                id: item.id,
                 title: item.title,
                 key: item.song_key,
                 bpm: item.bpm,
@@ -607,6 +623,7 @@
             editBpmBtn.style.visibility = 'visible';
             let val = bpmValue.innerText.trim();
             if (val !== "" && isNaN(val)) bpmValue.innerText = previousBpm;
+            updateLeadSheetButtons();
         });
 
         bpmValue.addEventListener('keydown', (e) => {
@@ -624,6 +641,14 @@
     // ========================================== //
     // --- 3. FRETBOARD LOGIC ---                 //
     // ========================================== //
+    function updateClearChordButtonState() {
+        const btnClearChord = document.getElementById('btn-clear-chord');
+        if (btnClearChord) {
+            // Disabled if all strings are strictly -1 (empty)
+            btnClearChord.disabled = currentFrets.every(f => f === -1);
+        }
+    }
+
     function renderFretboard() {
         const mount = document.getElementById('fretboard-mount');
         mount.innerHTML = `<div class="fretboard-layout">
@@ -676,6 +701,7 @@
         });
         
         updateAnalysis();
+        updateClearChordButtonState();
     }
 
     function updateAnalysis() {
@@ -797,6 +823,7 @@
                 titleHasBeenEdited = true;
             }
             titleEl.contentEditable = "false";
+            updateLeadSheetButtons();
         };
         
         titleEl.onkeydown = (e) => { 
@@ -811,8 +838,11 @@
         const title = document.getElementById('songTitleDisplay');
         const bpm = document.getElementById('bpm-value');
 
-        if (title) title.innerText = "Song Title";
+        if (title) title.innerText = "SONG TITLE";
         if (bpm) bpm.innerText = "";
+        
+        titleHasBeenEdited = false;
+        lastUserTitle = "SONG TITLE";
 
         progressionData = [];
         deselectAllSlots(); 
@@ -947,6 +977,7 @@
         document.getElementById('btnAddTop').disabled = !canAddNormally && !isSlotSelected;
         
         detectKey();
+        updateLeadSheetButtons(); // Ensure action buttons evaluate new sheet state
     }
 
     function drawChordGraphics(chord, index) {
@@ -1382,7 +1413,7 @@
         if (existingSession) {
             showConfirmModal(
                 `A progression named "${currentTitle}" already exists in your vault.\n\nDo you want to overwrite it?`,
-                () => { proceedWithCloudSave(existingSession._id, currentTitle); }
+                () => { proceedWithCloudSave(existingSession.id, currentTitle); }
             );
         } else {
             proceedWithCloudSave(null, currentTitle);
@@ -1440,6 +1471,7 @@
         checkboxes.forEach(cb => {
             cb.checked = master.checked;
         });
+        updateSelectionState();
     }
 
     function renderCloudGallery() {
@@ -1447,27 +1479,36 @@
         if (!container) return;
         container.innerHTML = '';
 
-        cloudBankData.forEach(item => {
+        if (cloudBankData.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">No sessions found in Vault.</div>';
+            return;
+        }
+
+        cloudBankData.forEach(session => {
             const row = document.createElement('div');
             row.className = 'bank-row';
             row.innerHTML = `
-                <div class="col-check">
-                    <input type="checkbox" class="bank-checkbox" data-id="${item.id}" onclick="event.stopPropagation()">
+                <div class="col-check" onclick="event.stopPropagation()">
+                    <input type="checkbox" class="bank-checkbox" data-id="${session.id}">
                 </div>
-                <div class="col-name" onclick="loadProgression('${item.id}')">${item.title || 'Untitled'}</div>
-                <div class="col-key">${item.key || '--'}</div>
-                <div class="col-bpm">${item.bpm || '--'}</div>
-                <button class="row-delete-btn" style="background:none;" onclick="openDeleteModal('${item.id}', event)">×</button>
+                <div class="col-name">${session.title || 'Untitled'}</div>
+                <div class="col-key">${session.key || '--'}</div>
+                <div class="col-bpm">${session.bpm || '--'}</div>
+                <button class="row-delete-btn" onclick="openDeleteModal('${session.id}', event)" title="Delete Progression">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y1="17"></line><line x1="14" y1="11" x2="14" y1="17"></line></svg>
+                </button>
             `;
-            container.appendChild(row);
-
+            
             row.onclick = () => loadProgression(session);
-            gallery.appendChild(row);
+            container.appendChild(row);
         });
 
         container.querySelectorAll('.bank-checkbox').forEach(cb => {
             cb.addEventListener('change', updateSelectionState);
         });
+
+        // Evaluate button selection states upon rendering 
+        updateSelectionState();
     }
 
     function loadProgression(content) {
@@ -1485,6 +1526,7 @@
         }
         
         titleHasBeenEdited = true;
+        lastUserTitle = content.title || "SONG TITLE";
         deselectAllSlots();
         renderSheet();
         showTooltip(`Loaded: ${content.title}`, "success");
@@ -1498,12 +1540,25 @@
         selectedProgressionIds = new Set(Array.from(checkboxes).map(cb => cb.dataset.id));
         
         const deleteBtn = document.getElementById('btn-delete-selected');
-        deleteBtn.disabled = selectedProgressionIds.size === 0;
+        const exportBtn = document.getElementById('export-pdf-btn');
+        const hasSelection = selectedProgressionIds.size > 0;
         
-        if (!deleteBtn.disabled) {
-            deleteBtn.classList.replace('btn-secondary', 'btn-primary');
-        } else {
-            deleteBtn.classList.replace('btn-primary', 'btn-secondary');
+        if (deleteBtn) {
+            deleteBtn.disabled = !hasSelection;
+            if (hasSelection) {
+                deleteBtn.classList.replace('btn-secondary', 'btn-secondary');
+            } else {
+                deleteBtn.classList.replace('btn-primary', 'btn-secondary');
+            }
+        }
+        
+        if (exportBtn) {
+            exportBtn.disabled = !hasSelection;
+            if (hasSelection) {
+                exportBtn.classList.replace('btn-secondary', 'btn-primary');
+            } else {
+                exportBtn.classList.replace('btn-primary', 'btn-secondary');
+            }
         }
     }
 
@@ -1538,6 +1593,9 @@
             closeDeleteModal();
             showTooltip("Deleted successfully", "success");
             requestCloudSessions(); // Refresh the list from Supabase
+            
+            // Clean up selections
+            selectedProgressionIds.clear();
             updateSelectionState();
         } catch (err) {
             console.error("Delete Error:", err);
@@ -1688,7 +1746,7 @@
         for (const cb of checkboxes) {
             const sessionID = cb.getAttribute('data-id');
             // Ensure ID comparison works whether string or int from DB
-            const data = cloudBankData.find(item => item._id == sessionID);
+            const data = cloudBankData.find(item => item.id == sessionID);
             if (!data) continue;
             
             const safeID = String(sessionID).replace(/[^a-z0-9]/gi, '-');
