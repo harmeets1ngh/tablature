@@ -1450,25 +1450,21 @@
         cloudBankData.forEach(item => {
             const row = document.createElement('div');
             row.className = 'bank-row';
-            
-            // FIX: Use item.id (not item._id) to match your Supabase data
-            const recordId = item.id; 
-
             row.innerHTML = `
                 <div class="col-check">
-                    <input type="checkbox" class="bank-checkbox" data-id="${recordId}" onclick="event.stopPropagation()">
+                    <input type="checkbox" class="bank-checkbox" data-id="${item.id}" onclick="event.stopPropagation()">
                 </div>
-                <div class="col-name" onclick="loadProgression('${recordId}')">
-                    ${item.title || 'Untitled'}
-                </div>
+                <div class="col-name" onclick="loadProgression('${item.id}')">${item.title || 'Untitled'}</div>
                 <div class="col-key">${item.key || '--'}</div>
                 <div class="col-bpm">${item.bpm || '--'}</div>
-                <button class="row-delete-btn" style="background:none;" onclick="openDeleteModal('${recordId}', event)">×</button>
+                <button class="row-delete-btn" style="background:none;" onclick="openDeleteModal('${item.id}', event)">×</button>
             `;
             container.appendChild(row);
+
+            row.onclick = () => loadProgression(session);
+            gallery.appendChild(row);
         });
 
-        // Listen for checkbox changes to enable/disable the "Delete Selected" button
         container.querySelectorAll('.bank-checkbox').forEach(cb => {
             cb.addEventListener('change', updateSelectionState);
         });
