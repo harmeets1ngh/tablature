@@ -12,7 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
     <script src="https://unpkg.com/vexchords@1.2.0/dist/vexchords.dev.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <style>
@@ -173,7 +172,6 @@
         .bank-row .col-name { color: #fff; font-weight: 500; font-size: 0.9rem; }
         .bank-row .col-key { color: #db3069; font-family: monospace; font-size: 0.85rem; font-weight: 600; }
         
-        /* UPDATED GRID COLUMNS TO INCLUDE BPM */
         .bank-header, .bank-row { grid-template-columns: 40px 2.5fr 1fr 1fr; gap: 10px; }
         .col-bpm { color: #888; font-size: 0.85rem; font-weight: 600; font-family: monospace; }
         
@@ -340,14 +338,13 @@
     </div>
 
     <div class="action-footer no-print">
-        <button class="btn btn-primary btn-wide" onclick="saveToPhonogramCloud()">Test Cloud Save</button>
         <button class="btn btn-primary btn-wide" onclick="saveProgressionToFile()">Save Progression</button>
         <button class="btn btn-secondary btn-wide" onclick="resetFullProgression()">Clear Sheet</button>
     </div>
 
     <div id="bank-container" class="no-print" style="margin-top: 50px; border-top: 1px solid #333; padding-top: 30px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK (VAULT)</h3>
+            <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK (CLOUD VAULT)</h3>
             <div style="display: flex; gap: 10px;">
                 <button id="export-pdf-btn" class="btn btn-primary" onclick="exportSelectedToPDF()">Export Selected (PDF)</button>
                 <button id="refresh-bank-btn" class="btn btn-secondary" onclick="requestCloudSessions()">Refresh Bank</button>
@@ -361,7 +358,7 @@
                 <div>Key</div>
                 <div>BPM</div>
             </div>
-            <div id="file-gallery">... Loading vault sessions ...</div>
+            <div id="file-gallery">... Loading cloud sessions ...</div>
         </div>
         
         <div id="snackbar">
@@ -446,12 +443,11 @@
 
 <script>
     // ========================================== //
-    // --- 0. STANDALONE DATABASE SETUP ---       //
+    // --- 0. SUPABASE CLOUD SETUP ---            //
     // ========================================== //
-    const db = new Dexie("PhonogramDB");
-    db.version(1).stores({
-        sessions: '++id, title, key, bpm, timestamp'
-    });
+    const supabaseUrl = 'https://wcqahyhmjgbombrrdoqr.supabase.co';
+    const supabaseKey = 'sb_publishable_rxgMgUb0z94bdBVN7xJOoA_Azbcduwm';
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // ========================================== //
     // --- 1. STATE & GLOBALS ---                 //
@@ -479,11 +475,6 @@
     let previousBpm = "";
     let tooltipTimeout; 
 
-    // 1. Initialize Supabase
-    const supabaseUrl = 'https://wcqahyhmjgbombrrdoqr.supabase.co';
-    const supabaseKey = 'sb_publishable_rxgMgUb0z94bdBVN7xJOoA_Azbcduwm';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
     // ========================================== //
     // --- 2. INITIALIZATION & EVENTS ---         //
     // ========================================== //
@@ -502,18 +493,31 @@
         requestCloudSessions();
     };
 
-    // DB: Load Sessions
+    // DB: Load Sessions from Supabase
     async function requestCloudSessions() {
-        document.getElementById('file-gallery').innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">Loading vault sessions...</div>';
+        document.getElementById('file-gallery').innerHTML = '<div style="padding: 20px; color: #888; text-align: center;">Loading cloud sessions...</div>';
+        
         try {
-            const sessions = await db.sessions.orderBy('timestamp').reverse().toArray();
-            cloudBankData = sessions;
-            // Map dexie ID to _id to match existing UI
-            cloudBankData.forEach(s => s._id = s.id);
+            const { data, error } = await supabaseClient
+                .from('progressions')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (error) throw error;
+
+            // Map Supabase columns to our local app state format
+            cloudBankData = data.map(item => ({
+                _id: item.id,
+                title: item.title,
+                key: item.song_key,
+                bpm: item.bpm,
+                chords: item.payload
+            }));
+            
             renderCloudGallery();
         } catch (err) {
             console.error("DB Load Error:", err);
-            showTooltip("Error loading vault", "warning");
+            showTooltip("Error connecting to cloud", "warning");
         }
     }
 
@@ -1325,10 +1329,12 @@
         }
     }
 
-    // DB: Save Session
+    // DB: Save Session to Supabase
     async function proceedWithCloudSave(existingId, currentTitle) {
         const currentKey = document.getElementById('keyDisplay').innerText.replace('Key: ', '').trim();
-        const currentBpm = document.getElementById('bpm-value').innerText.trim();
+        
+        let currentBpmStr = document.getElementById('bpm-value').innerText.trim();
+        const currentBpm = currentBpmStr ? parseInt(currentBpmStr) : null;
         
         const chordsWithSVGs = progressionData.map((chord) => {
             if (chord.isEmpty) return chord;
@@ -1343,65 +1349,31 @@
 
         const exportBundle = {
             title: currentTitle,
-            key: currentKey,
+            song_key: currentKey,
             bpm: currentBpm,
-            chords: chordsWithSVGs,
-            timestamp: Date.now()
+            payload: chordsWithSVGs
         };
 
+        if (existingId) {
+            exportBundle.id = existingId; 
+        }
+
         try {
-            if (existingId) {
-                await db.sessions.update(existingId, exportBundle);
-            } else {
-                await db.sessions.add(exportBundle);
-            }
+            showTooltip(existingId ? "Updating Cloud Session..." : "Saving to Vault...", "default");
+            
+            const { error } = await supabaseClient
+                .from('progressions')
+                .upsert(exportBundle);
+
+            if (error) throw error;
+            
             showTooltip("Saved to Vault", "success");
             requestCloudSessions(); 
         } catch (err) {
             console.error("DB Save Error:", err);
-            showTooltip("Error saving", "warning");
+            showTooltip("Error saving to cloud", "warning");
         }
     }
-
-    // 2. The Cloud Save Function
-    window.saveToPhonogramCloud = async function() {
-        // Gather the current data from the UI (matching your existing logic)
-        const currentTitle = document.getElementById('songTitleDisplay').innerText || "Untitled Progression";
-        const currentKey = document.getElementById('keyDisplay').innerText || "C";
-        const currentBpm = parseInt(document.getElementById('bpm-value').innerText) || 120;
-        
-        // window.currentProgression should contain your array of chord objects
-        const progressionData = window.currentProgression; 
-
-        if (!progressionData || progressionData.length === 0) {
-            alert("Nothing to save! Add some chords first.");
-            return;
-        }
-
-        try {
-            // Send the data to the 'progressions' table in Supabase
-            const { data, error } = await supabase
-                .from('progressions')
-                .insert([
-                    { 
-                        title: currentTitle, 
-                        song_key: currentKey, 
-                        bpm: currentBpm, 
-                        payload: progressionData 
-                    }
-                ]);
-
-            if (error) throw error;
-
-            // Success Feedback
-            console.log("Saved successfully:", data);
-            alert("Progression saved to the Phonogram Cloud!");
-            
-        } catch (error) {
-            console.error("Error saving to cloud:", error.message);
-            alert("Failed to save progression. Check the console for details.");
-        }
-    };
 
     function toggleAllCheckboxes(master) {
         const checkboxes = document.querySelectorAll('.bank-checkbox');
