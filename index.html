@@ -64,7 +64,7 @@
         .fretboard-layout::-webkit-scrollbar-thumb { background: #444; border-radius: 16px; border: 6px solid #121212; background-clip: padding-box; }
         .fretboard-layout::-webkit-scrollbar-thumb:hover { background: #555; }
         
-        .fretboard-layout { display: flex; flex-direction: column; margin-bottom: 30px; margin-top: 10px; background: #121212; padding: 20px 20px 20px 20px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; }
+        .fretboard-layout { display: flex; flex-direction: column; margin-bottom: 30px; margin-top: 10px; background: #121212; padding: 20px 20px 20px 20px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; scroll-behavior: smooth;}
         .fret-header-row { display: grid; grid-template-columns: 60px repeat(24, 180px); margin-left: 40px; margin-bottom: 10px; }
         .fret-number { display: flex; align-items: center; justify-content: center; color: #666; font-weight: 800; font-size: 0.75rem; }
         .fretboard-core-wrap { display: flex; }
@@ -657,63 +657,106 @@
     }
 
     function renderFretboard() {
-        const mount = document.getElementById('fretboard-mount');
+    // 1. Check if the structural shell already exists
+    let grid = document.getElementById('interaction-grid');
+    const mount = document.getElementById('fretboard-mount');
+    const area = document.querySelector('.fretboard-layout');
+    
+    // Save scroll position just in case, though this method shouldn't lose it
+    const scrollPos = area ? area.scrollLeft : 0;
+
+    // Add horizontal scroll support for mouse wheel with custom speed
+    document.addEventListener('wheel', function(e) {
+        // Check if the mouse is over the fretboard layout
+        const fretboard = e.target.closest('.fretboard-layout');
         
+        if (fretboard) {
+            // Prevent default vertical page scroll
+            e.preventDefault();
+            
+            // Speed multiplier: 1.0 is standard, 2.0 is double speed, etc.
+            // Adjust this number to find your preferred "snappiness"
+            const speed = 1.0; 
+            
+            // Directly set the scroll position for instant response
+            fretboard.scrollLeft += e.deltaY * speed;
+        }
+    }, { passive: false });
+
+    if (!grid) {
+        // 2. Only run this ONCE to create the layout shell
         const fretHeaders = Array.from({length: 24}, (_, i) => `<div class="fret-number">${i+1}</div>`).join('');
         const visualFrets = Array.from({length: 24}, (_, i) => `<div class="v-fret" style="left:${((i+1)/24)*100}%;"></div>`).join('');
 
-        mount.innerHTML = `<div class="fret-wrap"><div class="fretboard-layout">
-            <div class="fret-header-row"><div class="fret-number">OPEN</div>${fretHeaders}</div>
-            <div class="fretboard-core-wrap">
-                <div class="string-labels-col">${tuning.map(t => `<div class="string-label">${Tonal.Note.get(t).pc}</div>`).join('')}</div>
-                <div class="fretboard-interactive-area">
-                    <div class="visual-grid">${[0,20,40,60,80,100].map(p => `<div class="v-string" style="top:${p}%;"></div>`).join('')}${visualFrets}<div class="v-nut"></div></div>
-                    <div class="interaction-grid" id="interaction-grid"></div>
+        mount.innerHTML = `
+            <div class="fret-wrap">
+                <div class="fretboard-layout">
+                    <div class="fret-header-row"><div class="fret-number">OPEN</div>${fretHeaders}</div>
+                    <div class="fretboard-core-wrap">
+                        <div class="string-labels-col">${tuning.map(t => `<div class="string-label">${Tonal.Note.get(t).pc}</div>`).join('')}</div>
+                        <div class="fretboard-interactive-area">
+                            <div class="visual-grid">
+                                ${[0,20,40,60,80,100].map(p => `<div class="v-string" style="top:${p}%;"></div>`).join('')}
+                                ${visualFrets}
+                                <div class="v-nut"></div>
+                            </div>
+                            <div class="interaction-grid" id="interaction-grid"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div></div>`;
-        
-        const grid = document.getElementById('interaction-grid');
-        
-        tuning.forEach((note, s) => {
-            const nutZone = document.createElement('div'); 
-            nutZone.className = 'click-zone';
-            
-            nutZone.onclick = () => { 
-                const current = currentFrets[s];
-                if (current === -1 || current > 0) currentFrets[s] = 0; 
-                else if (current === 0) currentFrets[s] = -2; 
-                else currentFrets[s] = -1; 
-                
+            </div>`;
+        grid = document.getElementById('interaction-grid');
+    }
+
+    // 3. Always clear and rebuild ONLY the notes/click-zones
+    grid.innerHTML = '';
+    
+    tuning.forEach((note, s) => {
+        // NUT ZONE (Fret 0)
+        const nutZone = document.createElement('div'); 
+        nutZone.className = 'click-zone';
+        nutZone.onclick = (e) => {
+            e.stopPropagation(); // Prevents event bubbling
+            const current = currentFrets[s];
+            if (current === -1 || current > 0) currentFrets[s] = 0; 
+            else if (current === 0) currentFrets[s] = -2; 
+            else currentFrets[s] = -1; 
+            isUserEditingChord = false; 
+            renderFretboard(); 
+        };
+
+        if (currentFrets[s] === 0) nutZone.innerHTML = `<div class="note-visual open-dot">${Tonal.Note.get(note).pc}</div>`;
+        else if (currentFrets[s] === -2) nutZone.innerHTML = '<div class="note-visual muted-x">X</div>';
+        grid.appendChild(nutZone);
+
+        // FRET ZONES (1-24)
+        for (let f = 1; f <= 24; f++) {
+            const fretZone = document.createElement('div'); 
+            fretZone.className = 'click-zone';
+            fretZone.onclick = (e) => {
+                e.stopPropagation();
+                currentFrets[s] = (currentFrets[s] === f) ? -1 : f; 
                 isUserEditingChord = false; 
                 renderFretboard(); 
             };
-
-            if (currentFrets[s] === 0) nutZone.innerHTML = `<div class="note-visual open-dot">${Tonal.Note.get(note).pc}</div>`;
-            else if (currentFrets[s] === -2) nutZone.innerHTML = '<div class="note-visual muted-x">X</div>';
             
-            grid.appendChild(nutZone);
-
-            for (let f = 1; f <= 24; f++) {
-                const fretZone = document.createElement('div'); 
-                fretZone.className = 'click-zone';
-                fretZone.onclick = () => { 
-                    currentFrets[s] = (currentFrets[s] === f) ? -1 : f; 
-                    isUserEditingChord = false; 
-                    renderFretboard(); 
-                };
-                
-                if (currentFrets[s] === f) { 
-                    const pc = Tonal.Note.get(Tonal.Note.transpose(note, Tonal.Interval.fromSemitones(f))).pc; 
-                    fretZone.innerHTML = `<div class="note-visual fretted-dot">${pc}</div>`; 
-                }
-                grid.appendChild(fretZone);
+            if (currentFrets[s] === f) { 
+                const pc = Tonal.Note.get(Tonal.Note.transpose(note, Tonal.Interval.fromSemitones(f))).pc; 
+                fretZone.innerHTML = `<div class="note-visual fretted-dot">${pc}</div>`; 
             }
-        });
-        
-        updateAnalysis();
-        updateClearChordButtonState();
+            grid.appendChild(fretZone);
+        }
+    });
+
+    // 4. Restore scroll if it shifted (though it likely won't now)
+    const newArea = document.querySelector('.fretboard-layout');
+    if (newArea && scrollPos !== 0) {
+        newArea.scrollLeft = scrollPos;
     }
+
+    updateAnalysis();
+    updateClearChordButtonState();
+}
 
     function updateAnalysis() {
         let noteOrder = currentFrets.map((f, i) => f === -2 ? "X" : (f === -1 ? "-" : Tonal.Note.get(Tonal.Note.transpose(tuning[i], Tonal.Interval.fromSemitones(f))).pc));
@@ -1038,10 +1081,23 @@
 
         if (!chord.isEmpty) {
             let minFret = 99;
+            let hasOpenString = false;
             chord.frets.forEach(f => {
-                if (f > 0 && f < minFret) minFret = f;
+                if (f === 0) hasOpenString = true; // Check for open strings
+                if (f > 0 && f < minFret) minFret = f; // Minimum non-open fret
             });
-            const startPosition = (minFret !== 99 && minFret > 1) ? minFret : 1;
+
+            // REFINED LOGIC: 
+            // Always start at position 1 (showing the nut) if:
+            // 1. There is an open string.
+            // 2. The lowest fret used is less than fret 3 (respect standard open positions).
+            
+            let startPosition;
+            if (hasOpenString || minFret < 3) {
+                startPosition = 1; // Forces the nut indicator
+            } else {
+                startPosition = minFret; // Dynamic shift for chords high on the neck
+            }
 
             const vexParams = chord.frets.map((f, idx) => {
                 if (f === 0) return [idx + 1, 0];
@@ -1631,10 +1687,19 @@
     function drawChordGraphicsForPDF_Direct(chord, diagId, tabId, idx, total) {
         if (!chord.isEmpty) {
             let minFret = 99;
+            let hasOpenString = false;
             chord.frets.forEach(f => {
+                if (f === 0) hasOpenString = true;
                 if (f > 0 && f < minFret) minFret = f;
             });
-            const startPosition = (minFret !== 99 && minFret > 1) ? minFret : 1;
+
+            // Re-apply identical dynamic logic for consistent PDF output
+            let startPosition;
+            if (hasOpenString || minFret < 3) {
+                startPosition = 1; // Always show nut
+            } else {
+                startPosition = minFret; // Dynamic shift
+            }
 
             const vexParams = chord.frets.map((f, i) => {
                 if (f === 0) return [i + 1, 0];
@@ -1647,7 +1712,6 @@
                 strokeColor: '#000000', fillColor: '#000000', labelColor: '#000000'
             });
         }
-
         const { Renderer, TabStave, Barline } = Vex.Flow;
         const div = document.getElementById(tabId);
         if (!div) return;
