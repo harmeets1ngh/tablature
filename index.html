@@ -58,13 +58,12 @@
         .btn-group .btn { flex: 1; }
         
         /* --- FRETBOARD --- */
-        /*.fret-wrap { width: 100%; overflow-x: auto; padding-bottom: 10px; }*/
         .fretboard-layout::-webkit-scrollbar { height: 20px; }
         .fretboard-layout::-webkit-scrollbar-track { background: transparent; }
         .fretboard-layout::-webkit-scrollbar-thumb { background: #444; border-radius: 16px; border: 6px solid #121212; background-clip: padding-box; }
         .fretboard-layout::-webkit-scrollbar-thumb:hover { background: #555; }
         
-        .fretboard-layout { display: flex; flex-direction: column; margin-bottom: 30px; margin-top: 10px; background: #121212; padding: 20px 20px 20px 20px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; scroll-behavior: smooth;}
+        .fretboard-layout { display: flex; flex-direction: column; margin-bottom: 30px; margin-top: 10px; background: #121212; padding: 20px; border-radius: 8px; border: 1px solid #333; overflow-x: auto; scroll-behavior: smooth;}
         .fret-header-row { display: grid; grid-template-columns: 60px repeat(24, 180px); margin-left: 40px; margin-bottom: 10px; }
         .fret-number { display: flex; align-items: center; justify-content: center; color: #666; font-weight: 800; font-size: 0.75rem; }
         .fretboard-core-wrap { display: flex; }
@@ -172,14 +171,40 @@
 
         /* Progression Bank List View */
         .bank-list-container { width: 100%; margin-top: 20px; border: 1px solid #333; border-radius: 4px; overflow: hidden; background: #1a1a1a; }
-        .bank-header { display: grid; background: #252525; padding: 12px 20px; border-bottom: 1px solid #333; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #888; }
-        .bank-row { display: grid; padding: 12px 20px; border-bottom: 1px solid #222; cursor: pointer; transition: background 0.2s; align-items: center; position: relative; }
+        
+        /* Updated Grid Template to accommodate Date Modified */
+        .bank-header, .bank-row { display: grid; grid-template-columns: 40px 2fr 1fr 1fr 1.5fr; gap: 10px; align-items: center; }
+        
+        .bank-header { background: #252525; padding: 12px 20px; border-bottom: 1px solid #333; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+        
+        /* Sortable Headers */
+        .sort-header { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; transition: color 0.2s; }
+        .sort-header:hover { color: #fff; }
+        .sort-arrow-wrap { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+        .sort-arrow { transition: transform 0.2s, opacity 0.2s; opacity: 0; fill: currentColor; }
+        .sort-header:hover .sort-arrow.inactive { opacity: 0.4; }
+        .sort-header.active .sort-arrow { opacity: 1; color: #db3069; }
+        .sort-arrow.desc { transform: rotate(180deg); }
+
+        .bank-row { padding: 12px 20px; border-bottom: 1px solid #222; cursor: pointer; transition: background 0.2s; position: relative; }
         .bank-row:last-child { border-bottom: none; }
         .bank-row:hover { background: #2a2a2a; }
+        
         .bank-row .col-name { color: #fff; font-weight: 500; font-size: 0.9rem; }
         .bank-row .col-key { color: #db3069; font-family: monospace; font-size: 0.85rem; font-weight: 600; }
+        .bank-row .col-bpm { color: #888; font-size: 0.85rem; font-weight: 600; font-family: monospace; }
+        .bank-row .col-modified { color: #666; font-size: 0.8rem; font-family: monospace; }
+        .col-check { display: flex; align-items: center; justify-content: center; }
 
-        /* Bank Row Delete Button (Matches Action-Icon-Btn styles from lead sheet) */
+        /* Inline Edit UI */
+        .title-edit-wrapper { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .bank-title-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase;}
+        .inline-edit-btn { background: none; border: none; padding: 0; margin-top: 2px; color: #666; cursor: pointer; opacity: 0; transition: color 0.2s, opacity 0.2s; display: flex; align-items: center; justify-content: center; }
+        .bank-row:hover .inline-edit-btn { opacity: 1; }
+        .inline-edit-btn:hover { color: #db3069; }
+        .col-name-input { background: #111; color: #fff; border: 1px solid #db3069; padding: 4px 8px; outline: none; font-family: 'Outfit', sans-serif; font-size: 0.9rem; width: 90%; border-radius: 4px; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+
+        /* Bank Row Delete Button */
         .row-delete-btn {
             position: absolute;
             right: 20px;
@@ -226,11 +251,6 @@
         .confirm-card h3 { margin: 0 0 10px; text-transform: uppercase; font-size: 1rem; color: #fff; }
         .confirm-card p { color: #888; font-size: 0.9rem; margin-bottom: 25px; }
         .confirm-actions { display: flex; gap: 10px; justify-content: center; }
-        
-        .bank-header, .bank-row { grid-template-columns: 40px 2.5fr 1fr 1fr; gap: 10px; }
-        .col-bpm { color: #888; font-size: 0.85rem; font-weight: 600; font-family: monospace; }
-        
-        .col-check { display: flex; align-items: center; justify-content: center; }
 
         /* --- PDF EXPORT MODAL & STAGING --- */
         #pdf-preview-modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); backdrop-filter: blur(5px); scrollbar-width: thin; scrollbar-color: #777 transparent; }
@@ -409,9 +429,10 @@
         <div class="bank-list-container">
             <div class="bank-header">
                 <div class="col-check"><input type="checkbox" id="select-all-bank" onclick="toggleAllCheckboxes(this)"></div>
-                <div>Name</div>
-                <div>Key</div>
-                <div>BPM</div>
+                <div class="sort-header active desc" onclick="handleSort('title')" data-col="title">Name <span class="sort-arrow-wrap"><svg class="sort-arrow inactive" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg></span></div>
+                <div class="sort-header" onclick="handleSort('key')" data-col="key">Key <span class="sort-arrow-wrap"><svg class="sort-arrow inactive" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg></span></div>
+                <div class="sort-header" onclick="handleSort('bpm')" data-col="bpm">BPM <span class="sort-arrow-wrap"><svg class="sort-arrow inactive" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg></span></div>
+                <div class="sort-header active desc" onclick="handleSort('lastModified')" data-col="lastModified">Last Modified <span class="sort-arrow-wrap"><svg class="sort-arrow desc" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg></span></div>
             </div>
             <div id="file-gallery">Your saved progressions will appear here</div>
         </div>
@@ -541,6 +562,10 @@
     let cloudBankData = []; 
     let previousBpm = "";
     let tooltipTimeout; 
+    
+    // Sorting State
+    let currentSortCol = 'lastModified';
+    let currentSortAsc = false; // Default descending
 
     // ========================================== //
     // --- 2. INITIALIZATION & EVENTS ---         //
@@ -558,6 +583,7 @@
         renderFretboard();
         renderSheet();
         requestCloudSessions();
+        updateSortHeaderUI();
     };
 
     // UI Updater for conditional Action Buttons
@@ -594,7 +620,9 @@
                 title: item.title,
                 key: item.song_key,
                 bpm: item.bpm,
-                chords: item.payload
+                chords: item.payload,
+                // Use updated_at if available, fallback to created_at or current time
+                lastModified: new Date(item.updated_at || item.created_at || Date.now())
             }));
             
             renderCloudGallery();
@@ -1544,6 +1572,62 @@
         }
     }
 
+    // ========================================== //
+    // --- 8. PROGRESSION BANK UI & LOGIC ---     //
+    // ========================================== //
+
+    function handleSort(colName) {
+        if (currentSortCol === colName) {
+            currentSortAsc = !currentSortAsc;
+        } else {
+            currentSortCol = colName;
+            // Text defaults to Ascending (A-Z). Numbers/Dates default to Descending (Newest/Highest first).
+            currentSortAsc = (colName !== 'lastModified' && colName !== 'bpm');
+        }
+        updateSortHeaderUI();
+        renderCloudGallery();
+    }
+
+    function updateSortHeaderUI() {
+        document.querySelectorAll('.sort-header').forEach(header => {
+            header.classList.remove('active', 'asc', 'desc');
+            const col = header.getAttribute('data-col');
+            const arrowWrap = header.querySelector('.sort-arrow-wrap');
+            
+            if (col === currentSortCol) {
+                header.classList.add('active');
+                header.classList.add(currentSortAsc ? 'asc' : 'desc');
+                arrowWrap.innerHTML = `<svg class="sort-arrow ${currentSortAsc ? 'asc' : 'desc'}" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>`;
+            } else {
+                arrowWrap.innerHTML = `<svg class="sort-arrow inactive" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>`;
+            }
+        });
+    }
+
+    function getSortedBankData() {
+        return [...cloudBankData].sort((a, b) => {
+            let valA = a[currentSortCol];
+            let valB = b[currentSortCol];
+            
+            if (currentSortCol === 'title' || currentSortCol === 'key') {
+                valA = (valA || '').toString().toLowerCase();
+                valB = (valB || '').toString().toLowerCase();
+            } else if (currentSortCol === 'lastModified') {
+                // Ensure date parsing is rock solid
+                valA = valA ? new Date(valA).getTime() : 0;
+                valB = valB ? new Date(valB).getTime() : 0;
+            } else if (currentSortCol === 'bpm') {
+                valA = valA ? parseInt(valA) : 0;
+                valB = valB ? parseInt(valB) : 0;
+            }
+
+            // Ascending: Smallest/Oldest -> Largest/Newest
+            if (valA < valB) return currentSortAsc ? -1 : 1;
+            if (valA > valB) return currentSortAsc ? 1 : -1;
+            return 0;
+        });
+    }
+
     function toggleAllCheckboxes(master) {
         const checkboxes = document.querySelectorAll('.bank-checkbox');
         checkboxes.forEach(cb => {
@@ -1562,32 +1646,108 @@
             return;
         }
 
-        cloudBankData.forEach(session => {
+        const sortedData = getSortedBankData();
+
+        sortedData.forEach(session => {
             const row = document.createElement('div');
             row.className = 'bank-row';
+            
+            const dateStr = session.lastModified ? session.lastModified.toLocaleString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+            }) : '--';
+
             row.innerHTML = `
                 <div class="col-check" onclick="event.stopPropagation()">
                     <input type="checkbox" class="bank-checkbox" data-id="${session.id}">
                 </div>
-                <div class="col-name">${session.title || 'Untitled'}</div>
-                <div class="col-key">${session.key || '--'}</div>
-                <div class="col-bpm">${session.bpm || '--'}</div>
+                <div class="col-name title-edit-wrapper" id="title-wrapper-${session.id}" onclick="event.stopPropagation()">
+                    <span class="bank-title-text" onclick="loadProgressionById('${session.id}')">${session.title || 'Untitled'}</span>
+                    <button class="inline-edit-btn" onclick="startInlineRename('${session.id}', event)" title="Rename">
+                        <svg class="edit-icon" width="14" height="14" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    </button>
+                </div>
+                <div class="col-key" onclick="loadProgressionById('${session.id}')">${session.key || '--'}</div>
+                <div class="col-bpm" onclick="loadProgressionById('${session.id}')">${session.bpm || '--'}</div>
+                <div class="col-modified" onclick="loadProgressionById('${session.id}')">${dateStr}</div>
                 <button class="row-delete-btn" onclick="openDeleteModal('${session.id}', event)" title="Delete Progression">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y1="17"></line><line x1="14" y1="11" x2="14" y1="17"></line></svg>
                 </button>
             `;
             
-            row.onclick = () => loadProgression(session);
             container.appendChild(row);
         });
 
+        // Re-attach checkbox event listeners
         container.querySelectorAll('.bank-checkbox').forEach(cb => {
             cb.addEventListener('change', updateSelectionState);
+            // Restore selection state if it was selected before sorting
+            if(selectedProgressionIds.has(cb.dataset.id)) {
+                cb.checked = true;
+            }
         });
 
-        // Evaluate button selection states upon rendering 
         updateSelectionState();
     }
+    
+    // Helper to load by ID since row click is handled specifically now
+    window.loadProgressionById = function(id) {
+        const session = cloudBankData.find(s => s.id == id);
+        if (session) loadProgression(session);
+    }
+
+    window.startInlineRename = function(id, event) {
+        event.stopPropagation();
+        const wrapper = document.getElementById(`title-wrapper-${id}`);
+        const textSpan = wrapper.querySelector('.bank-title-text');
+        const currentTitle = textSpan.innerText;
+        
+        wrapper.innerHTML = `<input type="text" class="col-name-input" id="rename-input-${id}" value="${currentTitle}">`;
+        const input = document.getElementById(`rename-input-${id}`);
+        input.focus();
+        
+        // Move cursor to the end
+        input.setSelectionRange(input.value.length, input.value.length);
+        
+        const saveRename = async () => {
+            const newTitle = input.value.trim() || 'Untitled';
+            
+            // Revert UI immediately and update local data
+            const session = cloudBankData.find(s => s.id == id);
+            if(session) session.title = newTitle;
+            renderCloudGallery(); // Resets the UI back to span
+            
+            // Save to DB
+            try {
+                const { error } = await supabaseClient
+                    .from('progressions')
+                    .update({title: newTitle})
+                    .eq('id', id);
+                    
+                if (error) throw error;
+                showTooltip("Renamed successfully", "success");
+            } catch (err) {
+                console.error("Rename Error:", err);
+                showTooltip("Error renaming session", "warning");
+                // If it fails, reload original data
+                requestCloudSessions();
+            }
+        };
+
+        // Prevent row clicks while editing
+        input.onclick = (e) => e.stopPropagation();
+        
+        // Save on blur or enter
+        input.onblur = saveRename;
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                input.blur();
+            }
+            if (e.key === 'Escape') {
+                renderCloudGallery(); // Cancel edit
+            }
+        };
+    };
 
     function loadProgression(content) {
         if (!content || !content.chords) return;
@@ -1682,7 +1842,7 @@
     };
 
     // ========================================== //
-    // --- 8. PDF EXPORT ENGINE ---               //
+    // --- 9. PDF EXPORT ENGINE ---               //
     // ========================================== //
     function drawChordGraphicsForPDF_Direct(chord, diagId, tabId, idx, total) {
         if (!chord.isEmpty) {
