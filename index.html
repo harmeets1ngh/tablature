@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Phonogram | Tablature</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,7 +85,7 @@
         
         /* --- CONTROLS --- */
         .controls { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; background: #1e1e1e; padding: 25px; border-radius: 8px; border: 1px solid #333; align-items: center; }
-        .chord-name-container { display: flex; align-items: center; gap: 12px; }
+        .chord-name-container { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         #chordNameDisplay { font-family: 'Outfit', sans-serif; margin: 0; font-size: 2.2rem; font-weight: 800; color: #fff; outline: none; border-bottom: 2px dashed transparent; transition: border-bottom 0.3s; }
         #chordNameDisplay[contenteditable="true"] { border-bottom: 2px dashed #db3069; }
         .edit-icon { fill: #666; cursor: pointer; transition: fill 0.3s; }
@@ -93,7 +94,7 @@
 
         /* --- LEAD SHEET --- */
         #lead-sheet { background: white; border-radius: 8px; padding: 40px; color: black; margin-top: 30px; min-height: 450px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; position: relative; cursor: default; }
-        .title-container { border-bottom: 2px solid black; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; padding-bottom: 5px; }
+        .title-container { border-bottom: 2px solid black; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; padding-bottom: 5px; flex-wrap: wrap; }
         
         #songTitleDisplay { font-weight: 900; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; outline: none; min-width: 50px; }
         #songTitleDisplay[contenteditable="true"] { border-bottom: 1px dashed #db3069; background: #fffceb; }
@@ -121,8 +122,9 @@
         #btn-add-bar { position: absolute; display: flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; z-index: 200; top: 135px; transform: translateX(-50%); transition: all 0.2s; color: #999; }
         #btn-add-bar:hover { color: #db3069; transform: translateX(-50%) scale(1.1); }
 
-        .chord-label { font-weight: 800; font-size: 1.2rem; margin-top: 10px; height: 30px; text-align: center; pointer-events: none; }
-        .diag-wrapper { height: 140px; width: 100%; display: flex; justify-content: center; position: relative; pointer-events: none; } 
+        /* ADDED min-height to fix the staff jump bug */
+        .chord-label { font-weight: 800; font-size: 1.2rem; margin-top: 10px; height: 30px; min-height: 30px; text-align: center; pointer-events: none; }
+        .diag-wrapper { height: 140px; min-height: 140px; width: 100%; display: flex; justify-content: center; position: relative; pointer-events: none; } 
         .tab-wrapper { width: 100%; pointer-events: none; }
 
         .action-footer { display: flex; justify-content: flex-end; margin-top: 15px; gap: 10px; }
@@ -137,13 +139,13 @@
         .close-modal-btn:hover { color: #fff; }
 
         /* PAINTBRUSH TOOLBAR */
-        .strum-toolbar { display: flex; align-items: center; gap: 8px; }
+        .strum-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;}
         .tool-btn { background: #333; border: 1px solid #444; color: #fff; width: 34px; height: 34px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s; }
         .tool-btn:hover { background: #444; }
         .tool-btn.active { background: #db3069; border-color: #ff4d8d; }
         .res-dropdown { background: #333; color: white; border: 1px solid #444; padding: 6px; border-radius: 4px; font-size: 0.8rem; margin-left: auto; cursor: pointer; outline: none; }
 
-        .strum-grid-container { display: flex; flex-wrap: nowrap; width: 100%; background: #121212; border: 1px solid #333; border-radius: 4px; overflow: hidden; height: 60px; }
+        .strum-grid-container { display: flex; flex-wrap: nowrap; width: 100%; background: #121212; border: 1px solid #333; border-radius: 4px; overflow: hidden; height: 60px; touch-action: none; }
         .strum-cell { flex: 1 1 0; min-width: 0; border-right: 1px solid #222; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s; font-size: 1rem; font-weight: bold; color: #555; user-select: none; }
         .strum-cell:last-child { border-right: none; }
         .strum-cell:hover { background: #1e1e1e; }
@@ -168,7 +170,7 @@
         @keyframes fadeout-bottom { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
         /* Chord Alternates */
-        .alt-btn { width: 100px; padding: 8px 0; background: #222; color: #555; border: 1px solid #333; border-radius: 4px; font-family: 'Outfit', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s ease; }
+        .alt-btn { min-width: 80px; padding: 8px 12px; background: #222; color: #555; border: 1px solid #333; border-radius: 4px; font-family: 'Outfit', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s ease; }
         .alt-btn.active { background: #ffffff10; color: white; cursor: pointer; }
         .alt-btn.active:hover { background: #ffffff20; }
         .alt-btn.selected { background: #ffffff00; color: #fff; }
@@ -181,6 +183,9 @@
         
         .bank-header { background: #252525; padding: 12px 20px; border-bottom: 1px solid #333; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #888; }
         
+        .bank-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .bank-btn { display: flex; gap: 10px; }
+
         /* Sortable Headers */
         .sort-header { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; transition: color 0.2s; }
         .sort-header:hover { color: #fff; }
@@ -303,6 +308,54 @@
             .progression-slot { background: none !important; border: none !important; } 
             #btn-add-bar { display: none; } 
         }
+
+        /* --- MOBILE RESPONSIVE QUERIES --- */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .app-card { padding: 15px; border-radius: 8px; }
+
+            /*Fretboard Layout*/
+            .interaction-grid { display: grid; grid-template-columns: 60px repeat(24, 80px); grid-template-rows: repeat(6, 50px); }
+            .fret-header-row { display: grid; grid-template-columns: 60px repeat(24, 80px); margin-left: 40px; margin-bottom: 10px; }
+            
+            /* Stack controls and buttons */
+            .controls { grid-template-columns: 1fr; gap: 20px; }
+            .btn-group { flex-direction: column; }
+            .btn-group .btn { width: 100%; }
+            #alt-button-group { flex-wrap: wrap; }
+            .alt-btn { flex: 1 1 45%; }
+            
+            /* Sheet Scrolling for Mobile */
+            #lead-sheet { padding: 20px 15px; }
+            .sheet-container { overflow-x: auto; scroll-snap-type: x mandatory; display: flex; padding-bottom: 15px; }
+            #session-grid { min-width: max-content; gap: 0; display: flex; min-height: 275px;} 
+            
+            /* Expanded Mobile Bars & Persistent Icons */
+            .progression-slot { flex: 0 0 75vw !important; width: 75vw !important; scroll-snap-align: center; }
+            .slot-actions { opacity: 1 !important; }
+            
+            .title-container { flex-direction: row; align-items: flex-start; gap: 5px; }
+            
+            /* Bank List Scrolling & Persistent Icons */
+            .bank-list-container { overflow-x: auto; }
+            .bank-header, .bank-row { min-width: 650px; } 
+            .bank-row { padding-right: 40px; } /* Room for delete btn */
+            .inline-edit-btn { opacity: 1 !important; }
+            .row-delete-btn { opacity: 1 !important; right: 10px; }
+            
+            .bank-title { align-items: normal; flex-direction: column; gap: 10px; }
+            .bank-btn { flex-direction: column; }
+            
+            /* Stack footer actions */
+            .action-footer { flex-direction: column; gap: 10px; }
+            .action-footer .btn { width: 100%; }
+
+            /* Fix PDF Preview Modal for Mobile */
+            .modal-content { width: 95%; height: 85vh; margin: 5% auto; }
+            .modal-header { flex-direction: column; gap: 15px; text-align: center; }
+            .modal-header div { width: 100%; flex-direction: column; }
+            .modal-header .btn { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -406,9 +459,6 @@
         
         <div class="sheet-container">
             <div id="session-grid"></div>
-            <button id="btn-add-bar" class="no-print" onclick="event.stopPropagation(); addEmptyBar();" title="Add Bar">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
         </div>
     </div>
 
@@ -418,14 +468,14 @@
     </div>
 
     <div id="bank-container" class="no-print" style="margin-top: 50px; border-top: 1px solid #333; padding-top: 30px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="bank-title">
             <h3 style="font-weight: 200; letter-spacing: 2px; margin: 0;">PROGRESSION BANK</h3>
-            <div style="display: flex; gap: 10px;">
+            <div class="bank-btn">
                 <button id="export-pdf-btn" class="btn btn-secondary" disabled onclick="exportSelectedToPDF()">Export Selected (PDF)</button>
-                <button id="btn-delete-selected" class="btn btn-secondary btn-sm" disabled onclick="openDeleteModal(null)">Delete Selected</button>
+                <button id="btn-delete-selected" class="btn btn-secondary" disabled onclick="openDeleteModal(null)">Delete Selected</button>
             </div>
         </div>
-        
+
         <div class="bank-list-container">
             <div class="bank-header">
                 <div class="col-check"><input type="checkbox" id="select-all-bank" onclick="toggleAllCheckboxes(this)"></div>
@@ -1017,7 +1067,6 @@
 
     function renderSheet() {
         const grid = document.getElementById('session-grid');
-        const addBtn = document.getElementById('btn-add-bar');
         grid.innerHTML = ''; 
 
         progressionData.forEach((item, index) => {
@@ -1028,8 +1077,6 @@
             const pasteStrumClass = clipboardStrumOnly === null ? 'disabled' : '';
             const hasChord = !item.isEmpty;
 
-            // Notice we removed slot.onclick here and rely on the new zone wrappers below.
-            
             slot.innerHTML = `
                 <div class="slot-actions no-print" style="top: 8px; right: 8px;">
                     <button class="action-icon-btn" onclick="event.stopPropagation(); handleDelete(${index})" title="Delete Bar">
@@ -1071,11 +1118,41 @@
         const canAddNormally = progressionData.length < 4;
         const isSlotSelected = selectedSlotIndex !== null;
         
-        if (progressionData.length < 4) {
-            addBtn.style.display = 'flex';
-            addBtn.style.left = (progressionData.length * 25) + "%";
+        // Dynamic + Button placement
+        if (canAddNormally) {
+            const addBtnWrapper = document.createElement('div');
+            addBtnWrapper.style.display = 'flex';
+            addBtnWrapper.style.alignItems = 'center';
+            addBtnWrapper.style.justifyContent = 'center';
+            
+            // Adjust styling based on Mobile vs Desktop context
+            if (window.innerWidth <= 768) {
+                addBtnWrapper.style.minWidth = '60px';
+                addBtnWrapper.style.scrollSnapAlign = 'center';
+                addBtnWrapper.innerHTML = `<button class="no-print action-icon-btn" onclick="event.stopPropagation(); addEmptyBar();" title="Add Bar" style="color:#999;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>`;
+                grid.appendChild(addBtnWrapper); // Appended inside flex row
+            } else {
+                // Restore original absolute button for Desktop
+                const oldAddBtn = document.getElementById('btn-add-bar');
+                if(!oldAddBtn) {
+                   const absoluteBtn = document.createElement('button');
+                   absoluteBtn.id = 'btn-add-bar';
+                   absoluteBtn.className = 'no-print';
+                   absoluteBtn.onclick = (e) => { e.stopPropagation(); addEmptyBar(); };
+                   absoluteBtn.title = 'Add Bar';
+                   absoluteBtn.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+                   document.querySelector('.sheet-container').appendChild(absoluteBtn);
+                } else {
+                    oldAddBtn.style.display = 'flex';
+                    oldAddBtn.style.left = (progressionData.length * 25) + "%";
+                }
+            }
         } else {
-            addBtn.style.display = 'none';
+            // Hide absolute button if exists
+            const oldAddBtn = document.getElementById('btn-add-bar');
+            if(oldAddBtn) oldAddBtn.style.display = 'none';
         }
         
         const btnAddTop = document.getElementById('btnAddTop');
@@ -1098,8 +1175,15 @@
     }
 
     function drawChordGraphics(chord, index) {
-        const sheetWidth = document.getElementById('lead-sheet').clientWidth - 80;
-        const slotWidth = sheetWidth / 4;
+        let slotWidth;
+        if (window.innerWidth <= 768) {
+            slotWidth = window.innerWidth * 0.75; // Math matches CSS 75vw
+        } else {
+            const containerWidth = document.querySelector('.sheet-container').clientWidth;
+            const sheetWidth = Math.max(containerWidth, 600);
+            slotWidth = sheetWidth / 4;
+        }
+        
         const diagDiv = document.getElementById(`diag-svg-${index}`);
         const tabDiv = document.getElementById(`tab-svg-${index}`);
         
@@ -1361,29 +1445,47 @@
             document.getElementById('strum-target-name').innerText = chord.isEmpty ? `Strum: Empty Bar` : `Strum: ${chord.name}`;
             document.getElementById('resSelect').value = tempStrumData.resolution;
             
-            const slots = document.querySelectorAll('.progression-slot');
-            if (slots[selectedSlotIndex]) {
-                const slot = slots[selectedSlotIndex];
-                const slotRect = slot.getBoundingClientRect();
-                const card = document.querySelector('.app-card');
-                const cardRect = card.getBoundingClientRect();
+            // Adjust Positioning for Mobile vs Desktop
+            if (window.innerWidth <= 768) {
+                modal.style.position = 'fixed';
+                modal.style.top = 'auto';
+                modal.style.bottom = '20px';
+                modal.style.left = '5vw';
+                modal.style.width = '90vw';
+                modal.style.zIndex = '6000';
+                modal.style.transform = 'none';
+            } else {
+                modal.style.position = 'absolute';
+                modal.style.bottom = 'auto'; // Reset mobile anchor
+                modal.style.transform = 'none';
+                modal.style.zIndex = '1000';
+                modal.style.width = '380px';
                 
-                // Position relative to .app-card context
-                let targetTop = slotRect.top - cardRect.top;
-                let targetLeft = (slotRect.right - cardRect.left) + 15; 
-                
-                // If appending to right breaks outside the app card, flip to the left
-                if (targetLeft + 380 > cardRect.width) {
-                    targetLeft = (slotRect.left - cardRect.left) - 395;
-                    // Failsafe for very small screens
-                    if (targetLeft < 0) {
-                        targetLeft = cardRect.width - 380; 
+                const slots = document.querySelectorAll('.progression-slot');
+                if (slots[selectedSlotIndex]) {
+                    const slot = slots[selectedSlotIndex];
+                    const slotRect = slot.getBoundingClientRect();
+                    const card = document.querySelector('.app-card');
+                    const cardRect = card.getBoundingClientRect();
+                    
+                    // Position relative to .app-card context
+                    let targetTop = slotRect.top - cardRect.top;
+                    let targetLeft = (slotRect.right - cardRect.left) + 15; 
+                    
+                    // If appending to right breaks outside the app card, flip to the left
+                    if (targetLeft + 380 > cardRect.width) {
+                        targetLeft = (slotRect.left - cardRect.left) - 395;
+                        // Failsafe for very small screens
+                        if (targetLeft < 0) {
+                            targetLeft = cardRect.width - 380; 
+                        }
                     }
+                    
+                    modal.style.top = targetTop + "px";
+                    modal.style.left = targetLeft + "px";
                 }
-                
-                modal.style.top = targetTop + "px";
-                modal.style.left = targetLeft + "px";
             }
+            
             renderStrumGrid();
         } else {
             modal.classList.remove('active');
@@ -1438,6 +1540,33 @@
         const grid = document.getElementById('strum-grid');
         grid.innerHTML = '';
 
+        // Touch event functions for Mobile Drag-to-Paint
+        const paintAtPoint = (x, y) => {
+            const el = document.elementFromPoint(x, y);
+            if (el && el.classList.contains('strum-cell')) {
+                const idx = parseInt(el.getAttribute('data-idx'));
+                if(!isNaN(idx)) applyBrush(idx);
+            }
+        };
+
+        grid.ontouchstart = (e) => {
+            e.preventDefault();
+            isPaintingStrums = true;
+            const touch = e.touches ? e.touches[0] : e;
+            paintAtPoint(touch.clientX, touch.clientY);
+        };
+
+        grid.ontouchmove = (e) => {
+            if (!isPaintingStrums) return;
+            e.preventDefault();
+            const touch = e.touches ? e.touches[0] : e;
+            paintAtPoint(touch.clientX, touch.clientY);
+        };
+
+        const stopPainting = () => { isPaintingStrums = false; };
+        grid.ontouchend = stopPainting;
+        grid.ontouchcancel = stopPainting;
+
         tempStrumData.pattern.forEach((state, idx) => {
             const cell = document.createElement('div');
             let symbol = '';
@@ -1446,8 +1575,10 @@
             if (state === 'm') symbol = 'X';
             
             cell.className = `strum-cell state-${state}`;
+            cell.setAttribute('data-idx', idx); // Needed for touch mapping
             cell.innerHTML = symbol;
             
+            // Mouse event functions for Desktop Drag-to-Paint
             cell.onmousedown = (e) => {
                 e.preventDefault(); 
                 isPaintingStrums = true;
@@ -1604,8 +1735,6 @@
             let dbError;
             
             if (existingId) {
-                // EXPLICIT UPDATE - avoids upsert constraint errors
-                exportBundle.updated_at = new Date().toISOString();
                 const { error } = await supabaseClient
                     .from('progressions')
                     .update(exportBundle)
@@ -2098,12 +2227,13 @@
                 const slot = document.createElement('div');
                 slot.style.cssText = "text-align: center; padding: 0; margin: 0; overflow: hidden;";
                 
+                // FIXED HEIGHT APPLIED HERE
                 slot.innerHTML = `
-                    <div style="font-weight: 800; font-size: 1.2rem; margin-bottom: 5px; height: 25px;">
+                    <div style="font-weight: 800; font-size: 1.2rem; margin-bottom: 5px; height: 25px; min-height: 25px; text-align: center;">
                         ${chord.isEmpty ? '' : chord.name}
                     </div>
-                    <div id="diag-${safeID}-${idx}" style="margin-bottom: -10px;"></div>
-                    <div id="tab-${safeID}-${idx}"></div>
+                    <div id="diag-${safeID}-${idx}" style="height: 140px; min-height: 140px; margin-bottom: -10px; display: flex; justify-content: center; width: 100%;"></div>
+                    <div id="tab-${safeID}-${idx}" style="width: 100%;"></div>
                 `;
                 gridContainer.appendChild(slot);
                 drawChordGraphicsForPDF_Direct(chord, `diag-${safeID}-${idx}`, `tab-${safeID}-${idx}`, idx, data.chords.length);
