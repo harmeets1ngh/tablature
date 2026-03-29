@@ -320,10 +320,50 @@ class PhonogramTablature extends HTMLElement {
         <div class="app-card">
             <header class="no-print">
                 <div style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
-                    <svg width="300px" height="100%" viewBox="0 0 400 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                        <path d="M40.885,3.347l-2.596,2.596l0,1.648l10.272,0l-2.056,2.056l0,14.7l4.282,0l0,-16.756l8.317,0l0,-4.244l-18.218,0Z" style="fill:#fff;fill-rule:nonzero;" />
-                        <path d="M76.75,3.349l-12.319,-0.005l0,4.77l-5.803,5.803l0,10.431l4.285,0l0,-5.778l12.194,0l0,5.778l4.286,0l0,-18.355c0,-1.46 -1.184,-2.643 -2.643,-2.643Zm-1.643,12.993l-2.057,-2.057l-8.73,0l4.395,-4.395l0,-2.256l5.968,0c0.233,0 0.423,0.189 0.423,0.423l0,8.285Z" style="fill:#fff;fill-rule:nonzero;" />
-                        <path d="M100.387,14.05l-1.409,-1.409l1.049,0l2.057,-2.057l0,-4.229c0,-1.661 -1.347,-3.008 -3.008,-3.008l-13.16,0l-2.057,2.056l0,7.335l2.98,2.98l-2.98,0l0,8.628l20.813,0l0,-6.012l-4.284,-4.284Zm-12.243,-6.416l9.028,0c0.347,0 0.628,0.281 0.628,0.627l0,3.299l-9.656,0l0,-3.926Zm12.243,14.339l-1.903,-1.904l-10.34,0l0,-4.223l7.98,0l4.263,4.263l0,1.863Z" style="fill:#fff;fill-rule:nonzero;" />
+                    <svg width="300px" height="100%" viewBox="0 0 400 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+                        <g>
+                            <g>
+                                <use xlink:href="#_Image1" x="1" y="0" width="33px" height="29px" />
+                                <g>
+                                    <path d="M24.258,10.177l-9.874,9.874l-2.725,-2.725l9.874,-9.874l2.725,2.725Z" style="fill:#fff;" />
+                                    <rect x="11.659" y="17.376" width="1.927" height="13.964" style="fill:#fff;" />
+                                </g>
+                            </g>
+                            <path d="M40.885,3.347l-2.596,2.596l0,1.648l10.272,0l-2.056,2.056l0,14.7l4.282,0l0,-16.756l8.317,0l0,-4.244l-18.218,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M76.75,3.349l-12.319,-0.005l0,4.77l-5.803,5.803l0,10.431l4.285,0l0,-5.778l12.194,0l0,5.778l4.286,0l0,-18.355c0,-1.46 -1.184,-2.643 -2.643,-2.643Zm-1.643,12.993l-2.057,-2.057l-8.73,0l4.395,-4.395l0,-2.256l5.968,0c0.233,0 0.423,0.189 0.423,0.423l0,8.285Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M100.387,14.05l-1.409,-1.409l1.049,0l2.057,-2.057l0,-4.229c0,-1.661 -1.347,-3.008 -3.008,-3.008l-13.16,0l-2.057,2.056l0,7.335l2.98,2.98l-2.98,0l0,8.628l20.813,0l0,-6.012l-4.284,-4.284Zm-12.243,-6.416l9.028,0c0.347,0 0.628,0.281 0.628,0.627l0,3.299l-9.656,0l0,-3.926Zm12.243,14.339l-1.903,-1.904l-10.34,0l0,-4.223l7.98,0l4.263,4.263l0,1.863Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M126.678,15.761l-4.308,4.308l-10.647,0l0,-4.182l3.302,-3.302l0,-9.239l-4.285,0l0,7.463l-3.301,3.301l0,10.236l16.711,0l4.103,-4.103l0,-2.91l-1.575,-1.573Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M148.72,3.349l-12.319,-0.005l0,4.77l-5.803,5.803l0,10.431l4.285,0l0,-5.778l12.194,0l0,5.778l4.286,0l0,-18.355c0,-1.46 -1.184,-2.643 -2.643,-2.643Zm-1.643,12.993l-2.057,-2.057l-8.73,0l4.395,-4.395l0,-2.256l5.968,0c0.233,0 0.423,0.189 0.423,0.423l0,8.285Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M156.925,3.347l-2.596,2.596l0,1.648l10.272,0l-2.056,2.056l0,14.7l4.282,0l0,-16.756l8.317,0l0,-4.244l-18.218,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M194.739,3.348l0,6.713l-5.802,5.803l0,4.206l-6.443,0l0,-16.723l-4.284,0l0,21l13.153,0c1.035,-0.033 1.858,-0.882 1.859,-1.918l0,-4.79l5.802,-5.802l0,-8.49l-4.284,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M220.512,3.343l-17.943,0l0,9.833l6.114,0l5.802,5.802l0,3.114l2.256,2.256l4.402,0l0,-1.654l-3.711,-3.713l3.08,0c1.585,0 2.871,-1.285 2.871,-2.871l0,-9.893c0.001,-0.762 -0.301,-1.493 -0.84,-2.032c-0.539,-0.539 -1.269,-0.842 -2.032,-0.842Zm-1.416,10.665c0,0.182 -0.072,0.356 -0.201,0.485c-0.129,0.129 -0.303,0.201 -0.485,0.201l-2.149,0l-5.802,-5.802l-3.607,0l0,-1.264l11.558,0c0.182,0 0.357,0.072 0.485,0.201c0.129,0.128 0.201,0.303 0.201,0.486l0,5.693Zm-16.527,1.876l0,8.474l4.285,0l0,-6.417l-2.057,-2.057l-2.227,0Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <path d="M229.927,3.348c-1.491,0 -2.699,1.208 -2.699,2.699l0,5.79l4.11,4.11l12.422,0l0,-4.283l-10.649,0l-1.597,-1.597l0,-2.106c0.006,-0.183 0.156,-0.329 0.338,-0.329l16.191,0l0,-4.286l-18.117,0.002Zm-1.124,12.413l-1.575,1.573l0,2.91l4.103,4.103l16.711,0l0,-4.278l-14.932,0l-4.308,-4.308Z" style="fill:#fff;fill-rule:nonzero;" />
+                            <g>
+                                <clipPath id="_clip2">
+                                    <rect x="260.375" y="6.851" width="138.087" height="23.015" />
+                                </clipPath>
+                                <g clip-path="url(#_clip2)">
+                                    <g opacity="0.7">
+                                        <path d="M267.178,18.174c0.709,0.154 1.249,0.463 1.65,0.91c0.386,0.463 0.571,1.049 0.571,1.775c0,0.926 -0.339,1.636 -1.018,2.13c-0.694,0.509 -1.696,0.756 -3.038,0.756l-4.966,0l0,-10.802l4.657,0c1.203,0 2.144,0.247 2.807,0.725c0.663,0.478 0.987,1.173 0.987,2.052c0,0.602 -0.139,1.111 -0.432,1.512c-0.293,0.417 -0.709,0.741 -1.218,0.941Zm-5.66,-4.29l0,3.92l3.439,0c0.879,0 1.542,-0.17 2.02,-0.509c0.478,-0.324 0.709,-0.818 0.709,-1.451c0,-0.633 -0.231,-1.126 -0.709,-1.466c-0.478,-0.324 -1.141,-0.494 -2.02,-0.494l-3.439,0Zm3.809,8.919c0.972,0 1.696,-0.17 2.19,-0.494c0.494,-0.324 0.74,-0.849 0.74,-1.543c0,-1.343 -0.972,-2.021 -2.93,-2.021l-3.809,0l0,4.058l3.809,0Z" style="fill:#888989;fill-rule:nonzero;" />
+                                        <path d="M275.706,20.01l0,3.734l-1.126,0l0,-3.734l-4.318,-7.067l1.218,0l3.701,6.064l3.701,-6.064l1.141,0l-4.318,7.067Z" style="fill:#888989;fill-rule:nonzero;" />
+                                        <path d="M305.68,14.31l0,-1.339l3.615,0c0.995,0 1.846,0.354 2.553,1.062c0.707,0.708 1.061,1.56 1.061,2.555l0,0.169c0,0.995 -0.354,1.847 -1.061,2.555c-0.708,0.708 -1.559,1.062 -2.553,1.062l-2.276,0l0,3.371l-1.338,0l0,-4.71l3.522,0c0.656,0 1.215,-0.231 1.677,-0.693c0.461,-0.462 0.692,-1.018 0.692,-1.67c0,-0.652 -0.231,-1.208 -0.692,-1.67c-0.462,-0.462 -1.02,-0.693 -1.677,-0.693l-3.522,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M314.567,23.745l0,-10.774l1.338,0l0,4.71l4.553,0l0,-4.71l1.338,0l0,10.774l-1.338,0l0,-4.71l-4.553,0l0,4.71l-1.338,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M328.837,14.31c-1.118,0 -2.072,0.395 -2.861,1.185c-0.79,0.79 -1.184,1.744 -1.184,2.863c0,0.544 0.103,1.062 0.308,1.555c0.205,0.492 0.497,0.928 0.877,1.308c0.379,0.38 0.815,0.672 1.307,0.877c0.759,0.308 1.538,0.382 2.338,0.223c0.8,-0.159 1.489,-0.528 2.069,-1.108c0.579,-0.58 0.949,-1.27 1.107,-2.07c0.159,-0.8 0.082,-1.578 -0.231,-2.332c-0.313,-0.754 -0.807,-1.36 -1.484,-1.816c-0.677,-0.457 -1.425,-0.685 -2.246,-0.685Zm-2.699,-0.616c0.825,-0.482 1.725,-0.723 2.699,-0.723c0.974,0 1.874,0.241 2.699,0.723c0.826,0.482 1.479,1.136 1.961,1.962c0.482,0.826 0.723,1.726 0.723,2.701c0,0.975 -0.241,1.875 -0.723,2.701c-0.482,0.826 -1.136,1.48 -1.961,1.962c-0.826,0.482 -1.725,0.723 -2.699,0.723c-0.974,0 -1.874,-0.241 -2.699,-0.723c-0.826,-0.482 -1.479,-1.136 -1.961,-1.962c-0.482,-0.826 -0.723,-1.726 -0.723,-2.701c0,-0.975 0.241,-1.875 0.723,-2.701c0.482,-0.826 1.136,-1.48 1.961,-1.962Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M341.769,23.745l-4.553,-8.049l0,8.049l-1.338,0l0,-10.774l1.338,0l4.553,8.049l0,-8.049l1.338,0l0,10.774l-1.338,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M350.147,14.31c-1.118,0 -2.071,0.395 -2.861,1.185c-0.79,0.79 -1.184,1.744 -1.184,2.863c0,0.544 0.103,1.062 0.308,1.555c0.205,0.492 0.497,0.928 0.877,1.308c0.379,0.38 0.815,0.672 1.307,0.877c0.759,0.308 1.538,0.382 2.338,0.223c0.8,-0.159 1.489,-0.528 2.069,-1.108c0.579,-0.58 0.949,-1.27 1.107,-2.07c0.159,-0.8 0.082,-1.578 -0.231,-2.332c-0.313,-0.754 -0.807,-1.36 -1.484,-1.816c-0.677,-0.457 -1.425,-0.685 -2.246,-0.685Zm-2.699,-0.616c0.825,-0.482 1.725,-0.723 2.699,-0.723c0.974,0 1.874,0.241 2.699,0.723c0.825,0.482 1.479,1.136 1.961,1.962c0.482,0.826 0.723,1.726 0.723,2.701c0,0.975 -0.241,1.875 -0.723,2.701c-0.482,0.826 -1.136,1.48 -1.961,1.962c-0.826,0.482 -1.725,0.723 -2.699,0.723c-0.974,0 -1.874,-0.241 -2.699,-0.723c-0.826,-0.482 -1.479,-1.136 -1.961,-1.962c-0.482,-0.826 -0.723,-1.726 -0.723,-2.701c0,-0.975 0.241,-1.875 0.723,-2.701c0.482,-0.826 1.136,-1.48 1.961,-1.962Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M362.579,12.971c0.81,0 1.579,0.174 2.307,0.523c0.728,0.349 1.348,0.836 1.861,1.462l-1.169,0.693c-0.728,-0.811 -1.636,-1.252 -2.723,-1.324c-1.087,-0.072 -2.046,0.241 -2.876,0.939c-0.831,0.698 -1.305,1.585 -1.423,2.663c-0.118,1.077 0.156,2.044 0.823,2.901c0.667,0.857 1.536,1.365 2.607,1.524c1.072,0.159 2.048,-0.074 2.93,-0.7l-0.323,-0.493l-0.538,-0.785l-0.908,-1.339l1.63,0l0.769,1.139l0.431,0.646l0.185,0.262l1.8,2.663l-1.615,0l-0.677,-0.985c-0.943,0.657 -1.997,0.985 -3.161,0.985c-1.164,0 -2.21,-0.347 -3.138,-1.04c-0.928,-0.694 -1.569,-1.595 -1.923,-2.705c-0.354,-1.11 -0.349,-2.217 0.015,-3.321c0.364,-1.105 1.018,-1.999 1.961,-2.682c0.943,-0.683 1.994,-1.025 3.153,-1.025Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M368.538,14.31l0,-1.339l3.615,0c0.995,0 1.846,0.354 2.553,1.062c0.708,0.708 1.062,1.56 1.062,2.555l0,0.169c0,0.77 -0.223,1.467 -0.669,2.093c-0.446,0.626 -1.028,1.067 -1.746,1.324l2.415,3.571l-1.631,0l-1.738,-2.586l-0.538,-0.785l-0.908,-1.339l1.107,0c0.656,0 1.215,-0.231 1.677,-0.693c0.461,-0.462 0.692,-1.018 0.692,-1.67c0,-0.652 -0.231,-1.208 -0.692,-1.67c-0.461,-0.462 -1.02,-0.693 -1.677,-0.693l-3.522,0Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M381.194,12.971l1.415,0l3.767,10.774l-1.43,0l-3.045,-8.727l-3.061,8.727l-1.415,0l3.769,-10.774Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M396.295,12.971l2.168,0l0,10.774l-1.353,0l0,-9.05l-3.153,9.05l-1.415,0l-3.169,-9.05l0,9.05l-1.338,0l0,-10.774l2.169,0l3.046,8.742l3.046,-8.742Z" style="fill:#888989;fill-rule:nonzero;stroke:#888989;stroke-width:0.49px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:2;" />
+                                        <path d="M295.672,19.334l1.987,-1.988c0.022,-0.02 0.044,-0.041 0.064,-0.064c0.114,-0.129 0.183,-0.301 0.183,-0.49c0,-0.185 -0.067,-0.354 -0.177,-0.482c-0.024,-0.027 -0.049,-0.053 -0.077,-0.077l-3.562,-3.564c-0.013,-0.014 -0.026,-0.028 -0.041,-0.041c-0.124,-0.114 -0.287,-0.184 -0.466,-0.184c-0.208,0 -0.395,0.094 -0.523,0.244l-0.003,0l-2.358,2.36l-0.011,-3.888c0.012,-0.17 0.08,-0.324 0.186,-0.441l2.25,-2.251c0.123,-0.111 0.284,-0.179 0.46,-0.179c0.171,0 0.328,0.064 0.45,0.17l7.859,7.863c0.104,0.127 0.167,0.291 0.167,0.47c0,0.182 -0.065,0.348 -0.171,0.476l-6.37,6.374l-0.014,-3.861c0.005,-0.17 0.068,-0.326 0.168,-0.447Z" style="fill:#a4a4a4;" />
+                                        <path d="M290.699,23.337l0,-5.478c0.008,-0.181 0.081,-0.344 0.194,-0.467l2.231,-2.232c0.12,-0.1 0.273,-0.161 0.439,-0.161c0.175,0 0.335,0.067 0.458,0.177l1.125,1.126c0.116,0.13 0.187,0.303 0.187,0.494c0,0.19 -0.07,0.362 -0.185,0.492l-1.245,1.246l-0.014,0.011c-0.035,0.029 -0.067,0.062 -0.096,0.098c-0.087,0.109 -0.145,0.244 -0.159,0.392c-0.001,0.015 -0.002,0.031 -0.003,0.046c-0,0.009 -0,0.017 -0,0.026c0,0.024 0.001,0.049 0.003,0.072l0,6.055c-0.007,0.173 -0.073,0.33 -0.177,0.451l-2.572,2.573c-0.121,0.104 -0.277,0.167 -0.446,0.167c-0.029,0 -0.057,-0.002 -0.085,-0.005c-0.018,-0.003 -0.037,-0.006 -0.055,-0.009c-1.043,-0.188 -1.835,-1.102 -1.835,-2.199c0,-1.03 0.698,-1.898 1.646,-2.156c0.011,-0.002 0.022,-0.004 0.033,-0.006c0.022,-0.005 0.045,-0.011 0.066,-0.018c0.283,-0.093 0.488,-0.368 0.488,-0.692l0,-0.004l0.001,0Z" style="fill:#a4a4a4;" />
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                        <defs>
+                            <image id="_Image1" width="33px" height="29px" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACEAAAAdCAYAAAAkXAW5AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA7klEQVRIie3XvzJDURCA8d8ikQgZag+hUvMmCm+novYeShWVofAnySWyiuTqQjLmXhPuN3NmTnFmvy3O2bMb5pCZfeyjj02szTs7h3cUeMAtRhGRS8Zo+KcEZGbgGIfYqtj5ggtcR8S4YlfDilJezF65r5HEMCImkZkdnKL7C0mc4aZmb8MKEJnZxgl2anY/4Twi7sonum35puWnvKGIiEnN3oYV4PO/yMwujnCguhI+wCWuIqKoyNHwB/iykcnMddMRcBd7piNh65uYIzziHs8WqIoLdVOZuYH2bPXQmSXTwgRj0zI8wBCvi8hLPgCX8UMIJe++DQAAAABJRU5ErkJggg==" />
+                        </defs>
                     </svg>
                     <h1 style="font-size: 0.8rem; font-weight: 400; color: #888; letter-spacing: 1px; ">Free Guitar Chord Diagram & Progression Creator</h1>
                 </div>
@@ -508,8 +548,13 @@ class PhonogramTablature extends HTMLElement {
     }
 
     // Helper for Shadow DOM Selection
-    $ = (id) => this.shadowRoot.getElementById(id);
-    $$ = (sel) => this.shadowRoot.querySelectorAll(sel);
+    $(id) {
+        return this.shadowRoot.getElementById(id);
+    }
+    
+    $$(sel) {
+        return this.shadowRoot.querySelectorAll(sel);
+    }
 
     attachDelegatedEvents() {
         this.shadowRoot.addEventListener('click', (e) => {
@@ -561,17 +606,22 @@ class PhonogramTablature extends HTMLElement {
             }
         });
 
+        // Checkbox event delegation
         this.shadowRoot.addEventListener('change', (e) => {
+            // Explicitly handle checkboxes even if they lack data-action
+            if (e.target.classList.contains('bank-checkbox')) {
+                this.updateSelectionState();
+                return;
+            }
             const target = e.target.closest('[data-action]');
             if (!target) return;
             const action = target.getAttribute('data-action');
             if (action === 'changeResolution') this.changeResolution(target.value);
             if (action === 'toggleAllCheckboxes') this.toggleAllCheckboxes(target);
-            if (target.classList.contains('bank-checkbox')) this.updateSelectionState();
         });
     }
 
-    updateLeadSheetButtons = () => {
+    updateLeadSheetButtons() {
         const btnSave = this.$('btn-save-progression');
         const btnClear = this.$('btn-clear-sheet');
         const hasProgression = this.progressionData.some(chord => !chord.isEmpty);
@@ -637,12 +687,12 @@ class PhonogramTablature extends HTMLElement {
         });
     }
 
-    updateClearChordButtonState = () => {
+    updateClearChordButtonState() {
         const btnClearChord = this.$('btn-clear-chord');
         if (btnClearChord) btnClearChord.disabled = this.currentFrets.every(f => f === -1);
     }
 
-    renderFretboard = () => {
+    renderFretboard() {
         let grid = this.$('interaction-grid');
         const mount = this.$('fretboard-mount');
         const area = this.shadowRoot.querySelector('.fretboard-layout');
@@ -721,7 +771,7 @@ class PhonogramTablature extends HTMLElement {
         this.updateClearChordButtonState();
     }
 
-    updateAnalysis = () => {
+    updateAnalysis() {
         let noteOrder = this.currentFrets.map((f, i) => f === -2 ? "X" : (f === -1 ? "-" : window.Tonal.Note.get(window.Tonal.Note.transpose(this.tuning[i], window.Tonal.Interval.fromSemitones(f))).pc));
         this.$('notesDisplay').innerText = [...noteOrder].reverse().join(" ");
         if (this.isUserEditingChord) return;
@@ -785,20 +835,20 @@ class PhonogramTablature extends HTMLElement {
         });
     }
 
-    setAltChord = (param, btn) => {
+    setAltChord(param, btn) {
         this.currentlySelectedChordName = btn.innerText;
         this.$('chordNameDisplay').innerText = btn.innerText;
         this.$$('.alt-btn').forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
     }
 
-    clearFretboard = () => { 
+    clearFretboard() { 
         this.currentFrets = [-1,-1,-1,-1,-1,-1]; 
         this.isUserEditingChord = false; 
         this.renderFretboard(); 
     }
 
-    enableChordEdit = () => {
+    enableChordEdit() {
         const chordEl = this.$('chordNameDisplay');
         chordEl.contentEditable = "true";
         this.isUserEditingChord = true;
@@ -807,7 +857,7 @@ class PhonogramTablature extends HTMLElement {
         chordEl.onkeydown = (e) => { if(e.key === 'Enter') chordEl.blur(); };
     }
 
-    handleTitleEditClick = () => {
+    handleTitleEditClick() {
         const titleEl = this.$('songTitleDisplay');
         titleEl.contentEditable = "true";
         const previousValue = titleEl.innerText.trim();
@@ -828,7 +878,7 @@ class PhonogramTablature extends HTMLElement {
         titleEl.onkeydown = (e) => { if(e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } };
     }
 
-    resetFullProgression = () => {
+    resetFullProgression() {
         const title = this.$('songTitleDisplay');
         const bpm = this.$('bpm-value');
         if (title) title.innerText = "SONG TITLE";
@@ -840,14 +890,14 @@ class PhonogramTablature extends HTMLElement {
         this.renderSheet(); 
     }
 
-    addEmptyBar = () => {
+    addEmptyBar() {
         if (this.progressionData.length < 4) {
             this.progressionData.push({ isEmpty: true, frets: [-1,-1,-1,-1,-1,-1], name: '', resolution: 4, pattern: ['d','','',''] });
             this.renderSheet();
         }
     }
 
-    handleDelete = (index) => {
+    handleDelete(index) {
         if (this.progressionData[index].isEmpty) {
             this.progressionData.splice(index, 1);
             if(this.selectedSlotIndex === index) this.deselectAllSlots();
@@ -857,7 +907,7 @@ class PhonogramTablature extends HTMLElement {
         this.renderSheet();
     }
 
-    addChordToSheet = () => {
+    addChordToSheet() {
         if (this.currentFrets.every(f => f === -1)) {
             this.showTooltip("Create a chord on the fretboard first", "warning");
             return;
@@ -888,7 +938,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    loadChordToFretboard = (index) => {
+    loadChordToFretboard(index) {
         const chord = this.progressionData[index];
         this.selectedSlotIndex = index; 
         
@@ -901,15 +951,15 @@ class PhonogramTablature extends HTMLElement {
         }
         this.renderSheet();
         this.updateStrumModalVisibility();
-    };
+    }
 
-    handleStrumClick = (index) => {
+    handleStrumClick(index) {
         this.selectedSlotIndex = (this.selectedSlotIndex === index) ? null : index;
         this.renderSheet(); 
         this.updateStrumModalVisibility();
-    };
+    }
 
-    deselectAllSlots = () => {
+    deselectAllSlots() {
         if (this.selectedSlotIndex !== null) {
             this.selectedSlotIndex = null;
             this.updateStrumModalVisibility();
@@ -917,7 +967,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    renderSheet = () => {
+    renderSheet() {
         const grid = this.$('session-grid');
         grid.innerHTML = ''; 
 
@@ -997,15 +1047,20 @@ class PhonogramTablature extends HTMLElement {
             }
         }
         
-        setTimeout(() => {
-            this.progressionData.forEach((item, index) => this.drawChordGraphics(item, index));
-        }, 10);
+        const VF = window.Vex ? (window.Vex.Flow || window.Vex) : null;
+        if (VF && VF.Renderer) {
+            setTimeout(() => {
+                this.progressionData.forEach((item, index) => this.drawChordGraphics(item, index));
+            }, 10);
+        } else {
+            setTimeout(() => this.renderSheet(), 100);
+        }
         
         this.detectKey();
         this.updateLeadSheetButtons(); 
     }
 
-    drawChordGraphics = (chord, index) => {
+    drawChordGraphics(chord, index) {
         let slotWidth;
         if (window.innerWidth <= 768) {
             slotWidth = window.innerWidth * 0.75; 
@@ -1021,8 +1076,12 @@ class PhonogramTablature extends HTMLElement {
 
         diagDiv.innerHTML = ''; tabDiv.innerHTML = '';
         
-        const { Renderer, TabStave, Barline } = window.Vex.Flow;
-        const renderer = new Renderer(tabDiv, Renderer.Backends.SVG);
+        const VF = window.Vex ? (window.Vex.Flow || window.Vex) : null;
+        if (!VF || !VF.Renderer) return;
+
+        const { Renderer, TabStave, Barline } = VF;
+        
+        const renderer = new Renderer(tabDiv, 1); 
         renderer.resize(slotWidth + 10, 160); 
         const context = renderer.getContext();
         
@@ -1054,7 +1113,7 @@ class PhonogramTablature extends HTMLElement {
         }
         context.restore();
 
-        if (!chord.isEmpty) {
+        if (!chord.isEmpty && window.vexchords) {
             let minFret = 99;
             let hasOpenString = false;
             chord.frets.forEach(f => {
@@ -1133,7 +1192,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    detectKey = () => {
+    detectKey() {
         const display = this.$('keyDisplay');
         const filledChords = this.progressionData.filter(c => !c.isEmpty);
         if (filledChords.length === 0) { display.innerText = "Key: -"; return; }
@@ -1171,7 +1230,7 @@ class PhonogramTablature extends HTMLElement {
         display.innerText = `Key: ${candidates[0].name.replace(/\b\w/g, l => l.toUpperCase())}`;
     }
 
-    handleCopyChord = (index) => {
+    handleCopyChord(index) {
         const source = this.progressionData[index];
         if (!source.isEmpty) {
             this.clipboardChordOnly = { name: source.name, frets: [...source.frets] };
@@ -1180,7 +1239,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    handlePasteChord = (index) => {
+    handlePasteChord(index) {
         if (this.clipboardChordOnly) {
             const target = this.progressionData[index];
             this.progressionData[index] = { 
@@ -1192,7 +1251,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    handleCopyStrum = (index) => {
+    handleCopyStrum(index) {
         const source = this.progressionData[index];
         if (source.pattern) {
             this.clipboardStrumOnly = { resolution: source.resolution, pattern: [...source.pattern] };
@@ -1201,7 +1260,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    handlePasteStrum = (index) => {
+    handlePasteStrum(index) {
         if (this.clipboardStrumOnly) {
             const target = this.progressionData[index];
             this.progressionData[index] = { 
@@ -1212,7 +1271,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    updateStrumModalVisibility = () => {
+    updateStrumModalVisibility() {
         const modal = this.$('strum-modal');
         if (this.selectedSlotIndex !== null) {
             const chord = this.progressionData[this.selectedSlotIndex];
@@ -1261,7 +1320,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    makeDraggable = (el) => {
+    makeDraggable(el) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
         const handle = this.$("strum-handle");
         handle.onmousedown = (e) => {
@@ -1280,14 +1339,14 @@ class PhonogramTablature extends HTMLElement {
         };
     }
 
-    setTool = (tool) => {
+    setTool(tool) {
         this.activeBrush = tool;
         this.$$('.tool-btn').forEach(b => b.classList.remove('active'));
         const id = tool === '' ? 'tool-erase' : `tool-${tool}`;
         this.$(id).classList.add('active');
     }
 
-    applyBrush = (idx) => {
+    applyBrush(idx) {
         if (this.selectedSlotIndex === null) return;
         this.tempStrumData.pattern[idx] = this.activeBrush; 
         const grid = this.$('strum-grid');
@@ -1302,17 +1361,15 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    renderStrumGrid = () => {
+    renderStrumGrid() {
         if (this.selectedSlotIndex === null) return;
         const grid = this.$('strum-grid');
         grid.innerHTML = '';
 
-        // Clean up old listeners
         grid.ontouchstart = null; grid.ontouchmove = null;
         grid.ontouchend = null; grid.ontouchcancel = null;
 
         const paintAtPoint = (x, y) => {
-            // Shadow DOM ElementFromPoint!
             const el = this.shadowRoot.elementFromPoint(x, y);
             if (el && el.classList.contains('strum-cell')) {
                 const idx = parseInt(el.getAttribute('data-idx'));
@@ -1356,13 +1413,13 @@ class PhonogramTablature extends HTMLElement {
         });
     }
 
-    clearStrumPattern = () => {
+    clearStrumPattern() {
         if (this.selectedSlotIndex === null) return;
         this.tempStrumData.pattern = Array(this.tempStrumData.resolution).fill('');
         this.renderStrumGrid();
     }
 
-    changeResolution = (val) => {
+    changeResolution(val) {
         if (this.selectedSlotIndex === null) return;
         const newRes = parseInt(val);
         const oldRes = this.tempStrumData.resolution;
@@ -1382,14 +1439,14 @@ class PhonogramTablature extends HTMLElement {
         this.renderStrumGrid();
     }
 
-    insertStrumming = () => {
+    insertStrumming() {
         if (this.selectedSlotIndex === null) return;
         this.progressionData[this.selectedSlotIndex].pattern = [...this.tempStrumData.pattern];
         this.progressionData[this.selectedSlotIndex].resolution = this.tempStrumData.resolution;
         this.renderSheet();
     }
 
-    showTooltip = (message, type = "default") => {
+    showTooltip(message, type = "default") {
         const x = this.$("snackbar");
         const txt = this.$("snackbar-text");
         txt.innerText = message || "Action recorded";
@@ -1402,17 +1459,16 @@ class PhonogramTablature extends HTMLElement {
         this.tooltipTimeout = setTimeout(() => { x.classList.remove("show"); }, 3000);
     }
 
-    showConfirmModal = (message, onConfirm) => {
+    showConfirmModal(message, onConfirm) {
         const modal = this.$('custom-confirm-modal');
         const msgEl = this.$('confirm-modal-msg');
         const btnOk = this.$('confirm-btn-ok');
         msgEl.innerText = message;
         modal.style.display = 'flex';
-        // We use closure property mapping instead of re-cloning nodes
         btnOk.onclick = () => { modal.style.display = 'none'; if(onConfirm) onConfirm(); };
     }
 
-    saveProgressionToFile = () => {
+    saveProgressionToFile() {
         const hasAtLeastOneChord = this.progressionData.some(chord => !chord.isEmpty);
         if (!hasAtLeastOneChord) { this.showTooltip("Add at least one chord to save", "warning"); return; }
         const currentTitle = this.$('songTitleDisplay').innerText.trim();
@@ -1460,7 +1516,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    handleSort = (colName) => {
+    handleSort(colName) {
         if (this.currentSortCol === colName) { this.currentSortAsc = !this.currentSortAsc; } 
         else {
             this.currentSortCol = colName;
@@ -1470,7 +1526,7 @@ class PhonogramTablature extends HTMLElement {
         this.renderCloudGallery();
     }
 
-    updateSortHeaderUI = () => {
+    updateSortHeaderUI() {
         this.$$('.sort-header').forEach(header => {
             header.classList.remove('active', 'asc', 'desc');
             const col = header.getAttribute('data-col');
@@ -1484,7 +1540,7 @@ class PhonogramTablature extends HTMLElement {
         });
     }
 
-    getSortedBankData = () => {
+    getSortedBankData() {
         return [...this.cloudBankData].sort((a, b) => {
             let valA = a[this.currentSortCol]; let valB = b[this.currentSortCol];
             if (this.currentSortCol === 'title' || this.currentSortCol === 'key') {
@@ -1500,12 +1556,12 @@ class PhonogramTablature extends HTMLElement {
         });
     }
 
-    toggleAllCheckboxes = (master) => {
+    toggleAllCheckboxes(master) {
         this.$$('.bank-checkbox').forEach(cb => cb.checked = master.checked);
         this.updateSelectionState();
     }
 
-    renderCloudGallery = () => {
+    renderCloudGallery() {
         const container = this.$('file-gallery');
         if (!container) return;
         container.innerHTML = '';
@@ -1543,12 +1599,12 @@ class PhonogramTablature extends HTMLElement {
         this.updateSelectionState();
     }
 
-    loadProgressionById = (id) => {
+    loadProgressionById(id) {
         const session = this.cloudBankData.find(s => s.id == id);
         if (session) this.loadProgression(session);
     }
 
-    startInlineRename = (id, event) => {
+    startInlineRename(id, event) {
         const wrapper = this.$(`title-wrapper-${id}`);
         const currentTitle = wrapper.querySelector('.bank-title-text').innerText;
         wrapper.innerHTML = `<input type="text" class="col-name-input" id="rename-input-${id}" value="${currentTitle}">`;
@@ -1580,7 +1636,7 @@ class PhonogramTablature extends HTMLElement {
         };
     }
 
-    loadProgression = (content) => {
+    loadProgression(content) {
         if (!content || !content.chords) return;
         this.progressionData = content.chords;
         this.$('songTitleDisplay').innerText = content.title || "SONG TITLE";
@@ -1595,7 +1651,7 @@ class PhonogramTablature extends HTMLElement {
         this.showTooltip(`Loaded: ${content.title}`, "success");
     }
 
-    updateSelectionState = () => {
+    updateSelectionState() {
         const checkboxes = this.$$('.bank-checkbox:checked');
         this.selectedProgressionIds = new Set(Array.from(checkboxes).map(cb => cb.dataset.id));
         const deleteBtn = this.$('btn-delete-selected');
@@ -1612,7 +1668,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    openDeleteModal = (id, event) => {
+    openDeleteModal(id, event) {
         this.pendingDeleteId = id;
         const text = id 
             ? "This will permanently delete your progression. Please confirm that you want to delete it."
@@ -1621,12 +1677,12 @@ class PhonogramTablature extends HTMLElement {
         this.$('delete-confirm-modal').style.display = 'flex';
     }
 
-    closeDeleteModal = () => {
+    closeDeleteModal() {
         this.$('delete-confirm-modal').style.display = 'none';
         this.pendingDeleteId = null;
     }
 
-    confirmDelete = async () => {
+    async confirmDelete() {
         if (!this.supabaseClient) return;
         try {
             if (this.pendingDeleteId) {
@@ -1648,11 +1704,11 @@ class PhonogramTablature extends HTMLElement {
     // ========================================== //
     // --- PDF EXPORT ENGINE ---                  //
     // ========================================== //
-    drawChordGraphicsForPDF_Direct = (chord, diagId, tabId, idx, total) => {
+    drawChordGraphicsForPDF_Direct(chord, diagId, tabId, idx, total) {
         const diagDiv = this.$(diagId);
         const tabDiv = this.$(tabId);
 
-        if (!chord.isEmpty && diagDiv) {
+        if (!chord.isEmpty && diagDiv && window.vexchords) {
             let minFret = 99;
             let hasOpenString = false;
             chord.frets.forEach(f => { if (f === 0) hasOpenString = true; if (f > 0 && f < minFret) minFret = f; });
@@ -1667,9 +1723,13 @@ class PhonogramTablature extends HTMLElement {
         
         if (!tabDiv) return;
         tabDiv.innerHTML = ''; 
-        const { Renderer, TabStave, Barline } = window.Vex.Flow;
+        
+        const VF = window.Vex ? (window.Vex.Flow || window.Vex) : null;
+        if (!VF || !VF.Renderer) return;
+        const { Renderer, TabStave, Barline } = VF;
+        
         const slotWidth = 182; 
-        const renderer = new Renderer(tabDiv, Renderer.Backends.SVG);
+        const renderer = new Renderer(tabDiv, 1); 
         renderer.resize(slotWidth, 160); 
         const context = renderer.getContext();
         const stave = new TabStave(0, 0, slotWidth);
@@ -1723,7 +1783,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    exportSelectedToPDF = async () => {
+    async exportSelectedToPDF() {
         if (this.selectedProgressionIds.size === 0) return;
         const staging = this.$('pdf-pages-staging');
         staging.innerHTML = '<style>#pdf-pages-staging svg { margin-bottom: 20px; }</style>'; 
@@ -1779,7 +1839,7 @@ class PhonogramTablature extends HTMLElement {
         }
     }
 
-    triggerFinalPDF = () => {
+    triggerFinalPDF() {
         const element = this.$('pdf-pages-staging');
         const snackbar = this.$("snackbar");
         const statusText = this.$("snackbar-text");
@@ -1795,7 +1855,6 @@ class PhonogramTablature extends HTMLElement {
         }, 300);
 
         setTimeout(() => {
-            // HTML2Canvas workaround for Shadow DOM
             const exportWrapper = document.createElement('div');
             exportWrapper.style.cssText = "position:absolute; left:-9999px; top:0; width: 100%; z-index:-1;";
             this.shadowRoot.querySelectorAll('style').forEach(s => exportWrapper.appendChild(s.cloneNode(true)));
@@ -1823,11 +1882,10 @@ class PhonogramTablature extends HTMLElement {
         }, 500); 
     }
 
-    closePreview = () => {
+    closePreview() {
         const overlay = this.$('pdf-preview-modal');
         if (overlay) { overlay.style.display = 'none'; this.$('pdf-pages-staging').innerHTML = ''; }
-    };
+    }
 }
 
-// Register the custom element with the browser
 customElements.define('phonogram-tablature', PhonogramTablature);
