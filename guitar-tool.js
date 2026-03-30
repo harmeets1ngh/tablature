@@ -1,10 +1,8 @@
 class PhonogramTablature extends HTMLElement {
     constructor() {
         super();
-        // Create Shadow DOM to prevent Wix CSS interference
         this.attachShadow({ mode: 'open' });
 
-        // App State
         this.tuning = ["E4", "B3", "G3", "D3", "A2", "E2"];
         this.currentFrets = [-1, -1, -1, -1, -1, -1];
         this.progressionData = [];
@@ -12,29 +10,23 @@ class PhonogramTablature extends HTMLElement {
         this.titleHasBeenEdited = false;
         this.lastUserTitle = "SONG TITLE";
 
-        // Clipboard Memory
         this.clipboardChordOnly = null;
         this.clipboardStrumOnly = null;
 
-        // UI State
         this.selectedSlotIndex = null;
         this.activeBrush = 'd';
         this.tempStrumData = { pattern: [], resolution: 4 };
         this.isPaintingStrums = false;
         this.currentlySelectedChordName = "";
 
-        // Cloud Memory Data
         this.cloudBankData = [];
         this.previousBpm = "";
         this.tooltipTimeout = null;
 
-        // Sorting State
         this.currentSortCol = 'lastModified';
         this.currentSortAsc = false;
         this.selectedProgressionIds = new Set();
         this.pendingDeleteId = null;
-
-        // Supabase DB
         this.supabaseClient = null;
     }
 
@@ -49,15 +41,24 @@ class PhonogramTablature extends HTMLElement {
     // --- DEPENDENCY LOADER ---                  //
     // ========================================== //
     async loadDependencies() {
+        // 1. WIX SANDBOX BYPASS (UMD Masking)
+        // Wix exposes module/define variables in the browser. We must hide them 
+        // temporarily so VexFlow is forced to attach to the global window.
+        const _define = window.define;
+        const _module = window.module;
+        const _exports = window.exports;
+        window.define = undefined;
+        window.module = undefined;
+        window.exports = undefined;
+
         const scripts = [
             "https://cdn.jsdelivr.net/npm/tonal/browser/tonal.min.js",
-            "https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js",
-            "https://unpkg.com/vexchords@1.2.0/dist/vexchords.dev.js",
-            "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js",
-            "https://unpkg.com/@supabase/supabase-js@2"
+            "https://cdn.jsdelivr.net/npm/vexflow@3.0.9/releases/vexflow-min.js",
+            "https://cdn.jsdelivr.net/npm/vexchords@1.2.0/dist/vexchords.dev.js",
+            "https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js",
+            "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
         ];
 
-        // Google Fonts (injected to Light DOM so Shadow DOM can inherit)
         if (!document.getElementById('phonogram-fonts')) {
             const fonts = document.createElement('style');
             fonts.id = 'phonogram-fonts';
@@ -68,18 +69,47 @@ class PhonogramTablature extends HTMLElement {
             document.head.appendChild(fonts);
         }
 
+        // 2. STRICT SEQUENTIAL LOADING
+        // We MUST load these one by one using a standard loop so VexChords
+        // doesn't try to execute before VexFlow is ready.
         for (const src of scripts) {
             await new Promise((resolve) => {
-                if (document.querySelector(`script[src="${src}"]`)) {
-                    resolve();
-                    return;
-                }
+                if (document.querySelector(`script[src="${src}"]`)) return resolve();
                 const script = document.createElement('script');
                 script.src = src;
+                script.crossOrigin = "anonymous";
                 script.onload = resolve;
+                script.onerror = () => { 
+                    console.warn(`Warning: Script failed to load: ${src}`); 
+                    resolve(); 
+                };
                 document.head.appendChild(script);
             });
         }
+
+        // Restore Wix environment variables so we don't break the rest of your site
+        if (_define !== undefined) window.define = _define;
+        if (_module !== undefined) window.module = _module;
+        if (_exports !== undefined) window.exports = _exports;
+
+        // 3. Final Verification Polling
+        await new Promise((resolve) => {
+            let attempts = 0;
+            const checkLibs = setInterval(() => {
+                const isVexReady = (window.Vex && window.Vex.Flow) || (globalThis.Vex && globalThis.Vex.Flow);
+                const isChordsReady = window.vexchords || globalThis.vexchords;
+
+                if (isVexReady && isChordsReady) {
+                    clearInterval(checkLibs);
+                    resolve();
+                } else if (attempts > 30) { 
+                    console.warn("Library loading delayed, but proceeding to generate UI...");
+                    clearInterval(checkLibs);
+                    resolve();
+                }
+                attempts++;
+            }, 100);
+        });
     }
 
     // ========================================== //
@@ -561,7 +591,6 @@ class PhonogramTablature extends HTMLElement {
             const target = e.target.closest('[data-action]');
             
             if (!target) {
-                // If clicked outside, deselect slots
                 if (e.target.closest('#lead-sheet')) {
                     this.deselectAllSlots();
                 }
@@ -606,9 +635,7 @@ class PhonogramTablature extends HTMLElement {
             }
         });
 
-        // Checkbox event delegation
         this.shadowRoot.addEventListener('change', (e) => {
-            // Explicitly handle checkboxes even if they lack data-action
             if (e.target.classList.contains('bank-checkbox')) {
                 this.updateSelectionState();
                 return;
@@ -712,7 +739,7 @@ class PhonogramTablature extends HTMLElement {
                     <div class="fretboard-layout">
                         <div class="fret-header-row"><div class="fret-number">OPEN</div>${fretHeaders}</div>
                         <div class="fretboard-core-wrap">
-                            <div class="string-labels-col">${this.tuning.map(t => `<div class="string-label">${window.Tonal.Note.get(t).pc}</div>`).join('')}</div>
+                            <div class="string-labels-col">${this.tuning.map(t => `<div class="string-label">${globalThis.Tonal ? globalThis.Tonal.Note.get(t).pc : t.substring(0,1)}</div>`).join('')}</div>
                             <div class="fretboard-interactive-area">
                                 <div class="visual-grid">
                                     ${[0,20,40,60,80,100].map(p => `<div class="v-string" style="top:${p}%;"></div>`).join('')}
@@ -742,7 +769,10 @@ class PhonogramTablature extends HTMLElement {
                 this.renderFretboard(); 
             });
 
-            if (this.currentFrets[s] === 0) nutZone.innerHTML = `<div class="note-visual open-dot">${window.Tonal.Note.get(note).pc}</div>`;
+            if (this.currentFrets[s] === 0) {
+                const pc = globalThis.Tonal ? globalThis.Tonal.Note.get(note).pc : note.substring(0,1);
+                nutZone.innerHTML = `<div class="note-visual open-dot">${pc}</div>`;
+            }
             else if (this.currentFrets[s] === -2) nutZone.innerHTML = '<div class="note-visual muted-x">X</div>';
             grid.appendChild(nutZone);
 
@@ -757,7 +787,7 @@ class PhonogramTablature extends HTMLElement {
                 });
                 
                 if (this.currentFrets[s] === f) { 
-                    const pc = window.Tonal.Note.get(window.Tonal.Note.transpose(note, window.Tonal.Interval.fromSemitones(f))).pc; 
+                    const pc = globalThis.Tonal ? globalThis.Tonal.Note.get(globalThis.Tonal.Note.transpose(note, globalThis.Tonal.Interval.fromSemitones(f))).pc : '?'; 
                     fretZone.innerHTML = `<div class="note-visual fretted-dot">${pc}</div>`; 
                 }
                 grid.appendChild(fretZone);
@@ -772,7 +802,8 @@ class PhonogramTablature extends HTMLElement {
     }
 
     updateAnalysis() {
-        let noteOrder = this.currentFrets.map((f, i) => f === -2 ? "X" : (f === -1 ? "-" : window.Tonal.Note.get(window.Tonal.Note.transpose(this.tuning[i], window.Tonal.Interval.fromSemitones(f))).pc));
+        if (!globalThis.Tonal) return;
+        let noteOrder = this.currentFrets.map((f, i) => f === -2 ? "X" : (f === -1 ? "-" : globalThis.Tonal.Note.get(globalThis.Tonal.Note.transpose(this.tuning[i], globalThis.Tonal.Interval.fromSemitones(f))).pc));
         this.$('notesDisplay').innerText = [...noteOrder].reverse().join(" ");
         if (this.isUserEditingChord) return;
         
@@ -780,9 +811,9 @@ class PhonogramTablature extends HTMLElement {
         let bassNote = null;
         for (let i = 5; i >= 0; i--) { 
             if (this.currentFrets[i] >= 0) { 
-                const note = window.Tonal.Note.transpose(this.tuning[i], window.Tonal.Interval.fromSemitones(this.currentFrets[i])); 
+                const note = globalThis.Tonal.Note.transpose(this.tuning[i], globalThis.Tonal.Interval.fromSemitones(this.currentFrets[i])); 
                 activeNotes.push(note); 
-                if (bassNote === null) bassNote = window.Tonal.Note.get(note).pc; 
+                if (bassNote === null) bassNote = globalThis.Tonal.Note.get(note).pc; 
             } 
         }
 
@@ -800,15 +831,15 @@ class PhonogramTablature extends HTMLElement {
             return; 
         }
         
-        let pcSet = [...new Set(activeNotes.map(n => window.Tonal.Note.get(n).pc))];
-        let processedNames = window.Tonal.Chord.detect(pcSet);
+        let pcSet = [...new Set(activeNotes.map(n => globalThis.Tonal.Note.get(n).pc))];
+        let processedNames = globalThis.Tonal.Chord.detect(pcSet);
 
         if (processedNames.length === 0) {
-            const allTypes = window.Tonal.ChordType.all();
+            const allTypes = globalThis.Tonal.ChordType.all();
             let candidates = [];
             for (let root of pcSet) {
                 for (let type of allTypes) {
-                    const chordNotes = window.Tonal.Chord.getChord(type.aliases[0], root).notes;
+                    const chordNotes = globalThis.Tonal.Chord.getChord(type.aliases[0], root).notes;
                     const intersection = pcSet.filter(n => chordNotes.includes(n));
                     if (intersection.length >= 3) candidates.push({ name: root + (type.aliases[0] || type.name), score: intersection.length });
                 }
@@ -969,6 +1000,9 @@ class PhonogramTablature extends HTMLElement {
 
     renderSheet() {
         const grid = this.$('session-grid');
+        if (!grid) return;
+        
+        // 1. Build HTML first so the screen never stays blank
         grid.innerHTML = ''; 
 
         this.progressionData.forEach((item, index) => {
@@ -1046,14 +1080,13 @@ class PhonogramTablature extends HTMLElement {
                 btnAddTop.innerText = "Add to Sheet";
             }
         }
-        
-        const VF = window.Vex ? (window.Vex.Flow || window.Vex) : null;
+
+        // 2. Draw Canvases only if global libraries actually loaded
+        const VF = globalThis.Vex ? (globalThis.Vex.Flow || globalThis.Vex) : null;
         if (VF && VF.Renderer) {
-            setTimeout(() => {
-                this.progressionData.forEach((item, index) => this.drawChordGraphics(item, index));
-            }, 10);
+            this.progressionData.forEach((item, index) => this.drawChordGraphics(item, index));
         } else {
-            setTimeout(() => this.renderSheet(), 100);
+            console.warn("Canvases skipped: VexFlow is still loading or blocked.");
         }
         
         this.detectKey();
@@ -1076,12 +1109,12 @@ class PhonogramTablature extends HTMLElement {
 
         diagDiv.innerHTML = ''; tabDiv.innerHTML = '';
         
-        const VF = window.Vex ? (window.Vex.Flow || window.Vex) : null;
+        const VF = globalThis.Vex ? (globalThis.Vex.Flow || globalThis.Vex) : null;
         if (!VF || !VF.Renderer) return;
 
         const { Renderer, TabStave, Barline } = VF;
         
-        const renderer = new Renderer(tabDiv, 1); 
+        const renderer = new Renderer(tabDiv, Renderer.Backends.SVG); 
         renderer.resize(slotWidth + 10, 160); 
         const context = renderer.getContext();
         
@@ -1113,7 +1146,7 @@ class PhonogramTablature extends HTMLElement {
         }
         context.restore();
 
-        if (!chord.isEmpty && window.vexchords) {
+        if (!chord.isEmpty && globalThis.vexchords) {
             let minFret = 99;
             let hasOpenString = false;
             chord.frets.forEach(f => {
@@ -1129,7 +1162,7 @@ class PhonogramTablature extends HTMLElement {
                 return [idx + 1, f - startPosition + 1];
             });
 
-            window.vexchords.draw(diagDiv, { chord: vexParams, position: startPosition }, { 
+            globalThis.vexchords.draw(diagDiv, { chord: vexParams, position: startPosition }, { 
                 width: 120, height: 140, strokeColor: '#000', fillColor: '#000' 
             });
         }
@@ -1193,6 +1226,7 @@ class PhonogramTablature extends HTMLElement {
     }
 
     detectKey() {
+        if (!globalThis.Tonal) return;
         const display = this.$('keyDisplay');
         const filledChords = this.progressionData.filter(c => !c.isEmpty);
         if (filledChords.length === 0) { display.innerText = "Key: -"; return; }
@@ -1201,23 +1235,23 @@ class PhonogramTablature extends HTMLElement {
         const anchorName = anchorChord.name;
         let allNotes = [];
         filledChords.forEach(c => {
-            const chordInfo = window.Tonal.Chord.get(c.name);
+            const chordInfo = globalThis.Tonal.Chord.get(c.name);
             if (chordInfo && chordInfo.notes) allNotes.push(...chordInfo.notes);
         });
         
-        let uniqueNotes = [...new Set(allNotes.map(n => window.Tonal.Note.get(n).pc))];
+        let uniqueNotes = [...new Set(allNotes.map(n => globalThis.Tonal.Note.get(n).pc))];
         const rootMatch = anchorName.match(/^[A-G][#b]?/);
-        const firstRoot = rootMatch ? window.Tonal.Note.get(rootMatch[0]).pc : "C";
+        const firstRoot = rootMatch ? globalThis.Tonal.Note.get(rootMatch[0]).pc : "C";
         const isMinor = anchorName.toLowerCase().includes("m") && !anchorName.toLowerCase().includes("maj");
         const chromatic = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         
         let candidates = [];
         chromatic.forEach(root => {
             ["major", "minor"].forEach(type => {
-                const scaleNotes = window.Tonal.Scale.get(`${root} ${type}`).notes;
+                const scaleNotes = globalThis.Tonal.Scale.get(`${root} ${type}`).notes;
                 const matchCount = uniqueNotes.filter(n => scaleNotes.includes(n)).length;
                 let score = (matchCount / (uniqueNotes.length || 1)) * 100;
-                if (window.Tonal.Note.get(root).pc === firstRoot) {
+                if (globalThis.Tonal.Note.get(root).pc === firstRoot) {
                     score += 50;
                     if (isMinor && type === "minor") score += 20;
                     if (!isMinor && type === "major") score += 20;
@@ -1708,7 +1742,7 @@ class PhonogramTablature extends HTMLElement {
         const diagDiv = this.$(diagId);
         const tabDiv = this.$(tabId);
 
-        if (!chord.isEmpty && diagDiv && window.vexchords) {
+        if (!chord.isEmpty && diagDiv && globalThis.vexchords) {
             let minFret = 99;
             let hasOpenString = false;
             chord.frets.forEach(f => { if (f === 0) hasOpenString = true; if (f > 0 && f < minFret) minFret = f; });
@@ -1718,18 +1752,18 @@ class PhonogramTablature extends HTMLElement {
                 if (f < 0) return [i + 1, 'x'];
                 return [i + 1, f - startPosition + 1];
             });
-            window.vexchords.draw(diagDiv, { chord: vexParams, position: startPosition }, { width: 100, height: 120, strokeColor: '#000000', fillColor: '#000000', labelColor: '#000000' });
+            globalThis.vexchords.draw(diagDiv, { chord: vexParams, position: startPosition }, { width: 100, height: 120, strokeColor: '#000000', fillColor: '#000000', labelColor: '#000000' });
         }
         
         if (!tabDiv) return;
         tabDiv.innerHTML = ''; 
         
-        const VF = window.Vex ? (window.Vex.Flow || window.Vex) : null;
+        const VF = globalThis.Vex ? (globalThis.Vex.Flow || globalThis.Vex) : null;
         if (!VF || !VF.Renderer) return;
         const { Renderer, TabStave, Barline } = VF;
         
         const slotWidth = 182; 
-        const renderer = new Renderer(tabDiv, 1); 
+        const renderer = new Renderer(tabDiv, Renderer.Backends.SVG); 
         renderer.resize(slotWidth, 160); 
         const context = renderer.getContext();
         const stave = new TabStave(0, 0, slotWidth);
@@ -1788,6 +1822,9 @@ class PhonogramTablature extends HTMLElement {
         const staging = this.$('pdf-pages-staging');
         staging.innerHTML = '<style>#pdf-pages-staging svg { margin-bottom: 20px; }</style>'; 
         this.$('pdf-preview-modal').style.display = 'block';
+
+        // Add this line to lock background scrolling
+        document.body.style.overflow = 'hidden';
 
         const createPdfPage = () => {
             const page = document.createElement('div');
@@ -1868,7 +1905,7 @@ class PhonogramTablature extends HTMLElement {
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
-            window.html2pdf().set(opt).from(exportWrapper).save().then(() => {
+            globalThis.html2pdf().set(opt).from(exportWrapper).save().then(() => {
                 clearInterval(progressInterval);
                 progressBar.style.width = "100%"; statusText.innerText = "Export Complete";
                 document.body.removeChild(exportWrapper);
@@ -1885,6 +1922,9 @@ class PhonogramTablature extends HTMLElement {
     closePreview() {
         const overlay = this.$('pdf-preview-modal');
         if (overlay) { overlay.style.display = 'none'; this.$('pdf-pages-staging').innerHTML = ''; }
+
+        // Add this line to restore background scrolling
+        document.body.style.overflow = '';
     }
 }
 
